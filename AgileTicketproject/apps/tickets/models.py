@@ -7,31 +7,25 @@ except ImportError:
     from datetime import datetime as timezone
 
 
-def user_unicode(self):
-    """
-    return 'last_name, first_name' for User by default
-    """
-    return u'%s, %s' % (self.last_name, self.first_name)
-
-
-User.__unicode__ = user_unicode
-
-
 class User(AbstractUser):
     pass
     # Todo: add uid to models?
 
 
 class Agent(AbstractUser):
+    uid = models.CharField('Uid', unique=True)
+    organization = models.CharField('Organization Uid')
     role = models.ForeignKey('Role', null=True)
 
 
 class Role(models.Model):
+    uid = models.CharField('Uid', unique=True)
     name = models.CharField('Name', max_length=100)
     description = models.CharField('Description')
 
 
 class PreSetReply(models.Model):
+    uid = models.CharField('Uid', unique=True)
     name = models.CharField(
         'Name',
         max_length=100,
@@ -51,17 +45,18 @@ class PreSetReply(models.Model):
 
 
 class Organization(models.Model):
+    uid = models.CharField('Uid', unique=True)
     name = models.CharField('Name', max_length=255)
     Address = models.CharField('Address', max_length=1000, null=True, blank=True)
     phone = models.IntegerField('Phone Number', max_length=16, null=True)
     description = models.CharField('Description', max_length=1000, null=True, blank=True)
-    users = models.ManyToManyField(User, null=True)
     pre_set_replies = models.ManyToManyField(PreSetReply, null=True)
 
 
 class Product(models.Model):
+    uid = models.CharField('Uid', unique=True)
     name = models.CharField('Name', max_length=100)
-    owner = models.ForeignKey(Organization, on_delete=models.CASCADE, verbose_name="Producer")
+    owner = models.CharField("Organization Uid", on_delete=models.CASCADE)
     description = models.CharField("Description", max_length=500, null=True, blank=True)
     image = models.ImageField('Image', upload_to='products/', null=True, blank=True)
     created_at = models.DateTimeField('Created at', auto_now_add=True)
@@ -73,18 +68,12 @@ class Product(models.Model):
 
 class Ticket(models.Model):
     title = models.CharField('Title', max_length=255)
-    owner = models.ForeignKey(User,
-                              related_name='owner',
-                              blank=True,
-                              null=True,
-                              verbose_name='Owner')
+    owner = models.CharField('User Uid',
+                             related_name='owner',
+                             blank=True,
+                             null=True)
     description = models.TextField('Description', blank=True, null=True)
-    STATUS_CHOICES = (
-        ('TODO', 'TODO'),
-        ('IN PROGRESS', 'IN PROGRESS'),
-        ('WAITING', 'WAITING'),
-        ('DONE', 'DONE'),
-    )
+
     OPEN_STATUS = 1
     REOPENED_STATUS = 2
     RESOLVED_STATUS = 3
@@ -104,23 +93,22 @@ class Ticket(models.Model):
     LOW = 'low'
     MEDIUM = 'medium'
     HIGH = 'high'
-    CRITICALITY_CHOICES = [
+    PRIORITY_CHOICES = [
         (LOW, 'Low'),
         (MEDIUM, 'Medium'),
         (HIGH, 'High'),
     ]
-    priority = models.CharField(max_length=20, choices=CRITICALITY_CHOICES, default=LOW)
-    waiting_for = models.ForeignKey(User,
-                                    related_name='waiting_for',
-                                    blank=True,
-                                    null=True,
-                                    verbose_name='Waiting For')
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default=MEDIUM)
+    # waiting_for = models.ForeignKey(User,
+    #                                 related_name='waiting_for',
+    #                                 blank=True,
+    #                                 null=True,
+    #                                 verbose_name='Waiting For')
     closed_date = models.DateTimeField(blank=True, null=True)
-    assigned_to = models.ForeignKey(User,
-                                    related_name='assigned_to',
-                                    blank=True,
-                                    null=True,
-                                    verbose_name='Assigned to')
+    assigned_to = models.CharField('Assign to User',
+                                   related_name='assigned_to',
+                                   blank=True,
+                                   null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

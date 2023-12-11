@@ -1,8 +1,6 @@
 import abc
 from dataclasses import dataclass
 
-# Todo: add dataclasses of Role, User, Product, Ticket, ...
-
 
 class AbstractTicketServices(abc.ABC):
     """
@@ -116,28 +114,5 @@ class AbstractTicketServices(abc.ABC):
         Raises:
             NotImplementedError: If the method is not implemented in a concrete subclass.
         """
-        raise NotImplementedError
-
-
-class AbstractAccountsService(abc.ABC):
-    def login_with_username_and_password(self, username, password):
-        raise NotImplementedError
-
-    def modify_user(self, user):
-        raise NotImplementedError
-
-    def create_organization(self, organization):
-        raise NotImplementedError
-
-    def modify_organization(self, organization):
-        raise NotImplementedError
-
-    def create_role(self, role, organization):
-        raise NotImplementedError
-
-    def change_agent_role(self, role, agent):
-        raise NotImplementedError
-
-    def add_pre_set_reply(self, agent, pre_set_reply):
         raise NotImplementedError
 
