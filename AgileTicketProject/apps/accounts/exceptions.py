@@ -33,3 +33,8 @@ class RoleNotFound(NotFound):
 class OrganizationNotFound(NotFound):
     def __init__(self):
         super().__init__(f'Organization does not exist.')
+
+
+class DuplicateOrganizationName(BadRequest):
+    def __init__(self):
+        super().__init__(f'Organization Name is Duplicated!')

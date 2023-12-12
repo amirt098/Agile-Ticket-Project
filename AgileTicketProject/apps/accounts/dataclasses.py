@@ -26,6 +26,7 @@ class Agent:
 class Role:
     name: str
     description: str = None
+    organization: str = None
 
 
 @dataclass

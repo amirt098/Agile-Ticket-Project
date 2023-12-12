@@ -79,13 +79,12 @@ class AbstractAccountsService(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def create_role(self, role: dataclasses.Role, organization: dataclasses.Organization):
+    def create_role(self, role: dataclasses.Role):
         """
         Create a new role within an organization.
 
         Args:
             role (dataclasses.Role): Role information.
-            organization (dataclasses.Organization): Organization in which the role is created.
 
         Raises:
         """

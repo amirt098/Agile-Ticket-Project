@@ -83,7 +83,7 @@ class AccountsService(interfaces.AbstractAccountsService):
 
     def create_agent(self, agent_data: dataclasses.Agent):
         try:
-            organization = Organization.objects.get(agent_data.organization)
+            organization = Organization.objects.get(name=agent_data.organization)
             agent = Agent.objects.create(username=agent_data.username, organization=organization)
             agent.set_password(agent_data.password)
             if agent_data.role:
@@ -91,7 +91,7 @@ class AccountsService(interfaces.AbstractAccountsService):
                     name=agent_data.role.name,
                     defaults={
                         "description": agent_data.role.description})
-                agent.role=role
+                agent.role = role
             if agent_data.email:
                 agent.email = agent_data.email
             if agent_data.first_name:
@@ -101,24 +101,34 @@ class AccountsService(interfaces.AbstractAccountsService):
             agent.save()
             logger.info(f"Agent {agent.username} created successfully.")
         except Organization.DoesNotExist:
-            logger.warning(f"Organization with name {agent_data['Organization']} does not exist.")
+            logger.warning(f"Organization with name {agent_data.organization} does not exist.")
             raise exceptions.OrganizationNotFound()
         except Exception as e:
             logger.error(f"Error during agent creation: {e}", exc_info=True)
 
     def create_organization(self, organization_data: dataclasses.Organization):
         try:
-            organization = Organization.objects.create(**organization_data)
+            if Organization.objects.filter(name=organization_data.name).exists():
+                logger.warning(f'Organization Name: {organization_data.name} is Duplicated!')
+                raise exceptions.OrganizationNotFound()
+
+            organization = Organization(**vars(organization_data))
+            # vars convert dataclass to dictionary
+            organization.save()
             logger.info(f"Organization {organization.name} created successfully.")
         except Exception as e:
             logger.error(f"Error during organization creation: {e}", exc_info=True)
+            raise e
 
     def modify_organization(self, organization_data: dataclasses.Organization):
         try:
             organization = Organization.objects.get(name=organization_data.name)
-            organization.Address = organization_data.Address
-            organization.phone = organization_data.phone
-            organization.description = organization_data.description
+            if organization_data.Address:
+                organization.Address = organization_data.Address
+            if organization_data.phone:
+                organization.phone = str(organization_data.phone)
+            if organization_data.description:
+                organization.description = organization_data.description
             organization.save()
             logger.info(f"Organization {organization.name} modified successfully.")
         except Organization.DoesNotExist:
@@ -127,29 +137,37 @@ class AccountsService(interfaces.AbstractAccountsService):
         except Exception as e:
             logger.error(f"Error during organization modification: {e}", exc_info=True)
 
-    def create_role(self, role_data: dataclasses.Role, organization_data: dataclasses.Organization):
+    def create_role(self, role_data: dataclasses.Role):
+        logger.info(f'role data: {role_data}')
         try:
-            organization = Organization.objects.get(uid=organization_data['uid'])
-            role = Role.objects.create(**role_data, organization=organization)
+            role = Role.objects.create(
+                name=role_data.name
+            )
+            if role_data.description:
+                role.description = role_data.description
+            if role_data.organization:
+                organization = Organization.objects.get(name=role_data.organization)
+                role.organization = organization
+            role.save()
             logger.info(f"Role {role.name} created successfully in organization {organization.name}.")
         except Organization.DoesNotExist:
-            logger.warning(f"Organization with UID {organization_data['uid']} does not exist.")
+            logger.warning(f"Organization with Name {role_data.organization} does not exist.")
             raise exceptions.OrganizationNotFound()
         except Exception as e:
             logger.error(f"Error during role creation: {e}", exc_info=True)
 
     def change_agent_role(self, role_data: dataclasses.Role, agent_data: dataclasses.Agent):
         try:
-            agent = Agent.objects.get(uid=agent_data['uid'])
-            role = Role.objects.get(uid=role_data['uid'])
+            agent = Agent.objects.get(uid=agent_data.username)
+            role = Role.objects.get(uid=role_data.name)
             agent.role = role
             agent.save()
             logger.info(f"Role of Agent {agent.username} changed to {role.name} successfully.")
         except Agent.DoesNotExist:
-            logger.warning(f"Agent with UID {agent_data['uid']} does not exist.")
+            logger.warning(f"Agent with username {agent_data.username} does not exist.")
             raise exceptions.UserNotFound()
         except Role.DoesNotExist:
-            logger.warning(f"Role with UID {role_data['uid']} does not exist.")
+            logger.warning(f"Role with name {role_data.name} does not exist.")
             raise exceptions.RoleNotFound()
         except Exception as e:
             logger.error(f"Error during changing agent role: {e} ", exc_info=True)

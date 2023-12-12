@@ -4,11 +4,13 @@ from apps.accounts import exceptions
 from apps.accounts.models import Agent, Organization, Role
 from apps.accounts.dataclasses import Agent as AgentDataclass, Role as RoleDataclass
 
+
 class TestCreateAgent(TestCase):
 
     def setUp(self):
         self.service = get_bootstrapper().get_account_service()
         self.Org = Organization.objects.create(name='TestOrganization')
+
     def test_create_agent_successful(self):
         agent_data = AgentDataclass(
             username='good_agent',

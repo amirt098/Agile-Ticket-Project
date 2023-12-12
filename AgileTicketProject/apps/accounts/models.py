@@ -25,7 +25,9 @@ class Agent(User):
 class Role(models.Model):
     uid = models.CharField('Uid', unique=True, default=uuid.uuid4, max_length=36)
     name = models.CharField('Name', max_length=100)
-    description = models.CharField('Description',  max_length=500)
+    description = models.CharField('Description',  max_length=500, null=True)
+    organization = models.ForeignKey('Organization', null=True, on_delete=models.CASCADE)
+
 
     def __str__(self):
         return '%s' % self.name
