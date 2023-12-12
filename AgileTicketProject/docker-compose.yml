@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  ticket_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ticket_service
+    entrypoint: python3 manage.py
+    command: runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+#    depends_on:
+#      - db
+ # for now use sql lite;
+ # if you want use mysql use db!
+#  db:
+#    image: mysql:latest
+#    environment:
+#      MYSQL_DATABASE: mydatabase
+#      MYSQL_USER: mydatabaseuser
+#      MYSQL_PASSWORD: mydatabasepassword
+#      MYSQL_ROOT_PASSWORD: rootpassword
