@@ -1,5 +1,4 @@
 import logging
-from . import dataclasses
 from . import interfaces
 
 logger = logging.getLogger(__name__)
