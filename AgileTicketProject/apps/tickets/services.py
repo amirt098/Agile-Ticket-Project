@@ -39,5 +39,12 @@ class TicketService(interfaces.AbstractTicketServices):
     def add_attachment_to_ticket(self, user, attachment, ticket):
         pass
 
+    def get_tickets(self, user, organization, agent):
+        # add proper filters to be usable for agent, user, .....
+        pass
+
+    def get_products(self, user, organization):
+        pass
+
     # def add_pre_set_reply(self, agent: dataclasses.Agent, pre_set_reply: dataclasses.Agent):
     #     pass

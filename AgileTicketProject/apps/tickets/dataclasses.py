@@ -19,6 +19,11 @@ class Product:
 
 
 @dataclass
+class ProductList:
+    results: List[Product]
+
+
+@dataclass
 class Ticket:
     title: str
     owner: str
@@ -27,6 +32,9 @@ class Ticket:
     priority: str = None
     assigned_to: str = None
 
+@dataclass
+class TicketList:
+    results: List[Ticket]
 
 @dataclass
 class FollowUp:
@@ -36,6 +44,9 @@ class FollowUp:
     text: str = None
     user: str = None
 
+@dataclass
+class FollowUpList:
+    results: List[FollowUp]
 
 
 
