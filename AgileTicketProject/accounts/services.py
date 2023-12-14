@@ -39,10 +39,10 @@ class AccountsService(interfaces.AbstractAccountsService):
             if user_data.password:
                 user.set_password(user_data.password)
             user.save()
+            logger.info(f"User {user.username} modified successfully.")
             result = self._convert_user_to_data_class(user)
             logger.info(f"result: {result}")
             return result
-            logger.info(f"User {user.username} modified successfully.")
         except User.DoesNotExist:
             logger.warning(f"User {user_data.username} does not exist.")
             raise exceptions.UserNotFound()
@@ -115,6 +115,26 @@ class AccountsService(interfaces.AbstractAccountsService):
             raise exceptions.OrganizationNotFound()
         except Exception as e:
             logger.error(f"Error during agent creation: {e}", exc_info=True)
+            raise e
+
+    def create_user(self, user_data: dataclasses.User):
+        try:
+            user = User.objects.create(username=user_data.username)
+            user.set_password(user_data.password)
+            if user_data.email:
+                user.email = user_data.email
+            if user_data.first_name:
+                user.first_name = user_data.first_name
+            if user_data.last_name:
+                user.last_name = user_data.last_name
+            user.save()
+            logger.info(f"User {user.username} created successfully.")
+            logger.info(f"User {user.username} returned")
+            return self._convert_user_to_data_class(user)
+        except Exception as e:
+            logger.error(f"Error during user creation: {e}", exc_info=True)
+            raise e
+
 
     def create_organization(self, organization_data: dataclasses.Organization):
         try:
@@ -125,10 +145,10 @@ class AccountsService(interfaces.AbstractAccountsService):
             organization = Organization(**vars(organization_data))
             # vars convert dataclass to dictionary
             organization.save()
+            logger.info(f"Organization {organization.name} created successfully.")
             result = self._convert_organization_to_data_class(organization)
             logger.info(f"result: {result}")
             return result
-            logger.info(f"Organization {organization.name} created successfully.")
         except Exception as e:
             logger.error(f"Error during organization creation: {e}", exc_info=True)
             raise e
@@ -151,6 +171,7 @@ class AccountsService(interfaces.AbstractAccountsService):
             raise exceptions.OrganizationNotFound()
         except Exception as e:
             logger.error(f"Error during organization modification: {e}", exc_info=True)
+            raise e
 
     def create_role(self, role_data: dataclasses.Role):
         logger.info(f'role data: {role_data}')
@@ -172,6 +193,7 @@ class AccountsService(interfaces.AbstractAccountsService):
             raise exceptions.OrganizationNotFound()
         except Exception as e:
             logger.error(f"Error during role creation: {e}", exc_info=True)
+            raise e
 
     def change_agent_role(self, role_data: dataclasses.Role, agent_data: dataclasses.Agent):
         try:
@@ -196,6 +218,16 @@ class AccountsService(interfaces.AbstractAccountsService):
             raise e
 
     @staticmethod
+    def _convert_user_to_data_class(user: User) -> dataclasses.User:
+        return dataclasses.User(
+            username=user.username,
+            email=user.email,
+            first_name=user.first_name,
+            last_name=user.last_name,
+        )
+
+
+    @staticmethod
     def _convert_organization_to_data_class(org: Organization) -> dataclasses.Organization:
         return dataclasses.Organization(
             name=org.name,
@@ -214,15 +246,6 @@ class AccountsService(interfaces.AbstractAccountsService):
             role=self._convert_role_to_data_class(agent.role) if agent.role else None
         )
 
-    @staticmethod
-    def _convert_user_to_data_class(user: User) -> dataclasses.Agent:
-        return dataclasses.Agent(
-            username=user.username,
-            first_name=user.first_name,
-            last_name=user.last_name,
-            email=user.email,
-
-        )
 
     @staticmethod
     def _convert_role_to_data_class(role: Role) -> dataclasses.Role:
