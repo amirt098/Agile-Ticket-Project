@@ -27,12 +27,12 @@ class TicketService(interfaces.AbstractTicketServices):
             description=product_data.description,
 
         )
-        result = self._convert_product_to_dataclasses(created_product)
+        result = self._convert_product_to_dataclass(created_product)
         logger.info(f'result: {result}')
         return result
 
     @staticmethod
-    def _convert_product_to_dataclasses(product: Product) -> dataclasses.Product:
+    def _convert_product_to_dataclass(product: Product) -> dataclasses.Product:
         return dataclasses.Product(
             name=product.name,
             owner=product.owner,
@@ -42,7 +42,21 @@ class TicketService(interfaces.AbstractTicketServices):
     def modify_product(self, user, product):
         pass
 
-    def create_ticket(self, user, ticket):
+    def create_ticket(self, username: str, ticket_data: dataclasses.Ticket):
+        try:
+            ticket = dataclasses.Ticket.objects.create(title= ticket_data.title, owner= ticket_data.owner)
+            if ticket_data.description:
+                ticket.description = ticket_data.description
+            if ticket_data.priority:
+                ticket.priority = ticket_data.priority
+            ticket.status = 'waiting for awnser'
+            ticket.save()
+            logger.info(f"User {username} created a ticket with title {ticket.title} successfully.")
+            logger.info(f"ticket {username} returned")
+            return self._convert_ticket_to_dataclass(ticket)
+        except Exception as e:
+            logger.error(f"Error during user creation: {e}", exc_info=True)
+            raise e
         pass
 
     def modify_ticket(self, user, ticket):
@@ -66,6 +80,15 @@ class TicketService(interfaces.AbstractTicketServices):
 
     def get_products(self, user, organization):
         pass
+
+    @staticmethod
+    def _convert_ticket_to_dataclass(ticket: dataclasses.Ticket) -> dataclasses.Ticket:
+        return dataclasses.Product(
+            title=ticket.title,
+            owner=ticket.owner,
+            description=ticket.description,
+            status=ticket.status,
+        )
 
     # def add_pre_set_reply(self, agent: dataclasses.Agent, pre_set_reply: dataclasses.Agent):
     #     pass
