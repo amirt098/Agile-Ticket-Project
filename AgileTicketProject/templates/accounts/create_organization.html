@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container mt-5">
+
+            <h2 class="card-title text-center mb-4">Create Organization</h2>
+            <form method="post" action="{% url 'create_organization' %}" class="needs-validation" novalidate>
+              {% csrf_token %}
+              {{ form.as_p }}
+              <div class="text-center mt-3">
+                <button type="submit" class="btn btn-primary">Create Organization</button>
+              </div>
+            </form>
+
+  </div>
+{% endblock %}

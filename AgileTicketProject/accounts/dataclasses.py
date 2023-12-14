@@ -32,6 +32,6 @@ class Role:
 @dataclass
 class Organization:
     name: str
-    Address: str = None
+    address: str = None
     phone: int = None
     description: str = None

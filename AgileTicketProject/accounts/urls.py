@@ -1,7 +1,11 @@
 from django.urls import path
-from .views import UserLoginView
+from . import views
 
 urlpatterns = [
-    path('login/', UserLoginView.as_view(), name='login'),
+    path('login/', views.UserLoginView.as_view(), name='login'),
+    path('create_user/', views.CreateUserView.as_view(), name='create_user'),
+    path('create_agent/', views.CreateAgentView.as_view(), name='create_agent'),
+    path('create_organization/', views.CreateOrganizationView.as_view(), name='create_organization'),
+
     # Other URL patterns for the app
 ]

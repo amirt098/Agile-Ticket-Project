@@ -119,6 +119,7 @@ class AccountsService(interfaces.AbstractAccountsService):
 
     def create_user(self, user_data: dataclasses.User):
         try:
+            logger.info(f'user_data: {user_data}')
             user = User.objects.create(username=user_data.username)
             user.set_password(user_data.password)
             if user_data.email:
@@ -135,8 +136,7 @@ class AccountsService(interfaces.AbstractAccountsService):
             logger.error(f"Error during user creation: {e}", exc_info=True)
             raise e
 
-
-    def create_organization(self, organization_data: dataclasses.Organization):
+    def create_organization(self, organization_data: dataclasses.Organization) -> dataclasses.Organization:
         try:
             if Organization.objects.filter(name=organization_data.name).exists():
                 logger.warning(f'Organization Name: {organization_data.name} is Duplicated!')
@@ -156,8 +156,8 @@ class AccountsService(interfaces.AbstractAccountsService):
     def modify_organization(self, organization_data: dataclasses.Organization):
         try:
             organization = Organization.objects.get(name=organization_data.name)
-            if organization_data.Address:
-                organization.Address = organization_data.Address
+            if organization_data.address:
+                organization.address = organization_data.address
             if organization_data.phone:
                 organization.phone = str(organization_data.phone)
             if organization_data.description:
@@ -226,13 +226,12 @@ class AccountsService(interfaces.AbstractAccountsService):
             last_name=user.last_name,
         )
 
-
     @staticmethod
     def _convert_organization_to_data_class(org: Organization) -> dataclasses.Organization:
         return dataclasses.Organization(
             name=org.name,
             description=org.description,
-            Address=org.Address,
+            address=org.address,
             phone=int(org.phone) if org.phone else None,
         )
 
@@ -245,7 +244,6 @@ class AccountsService(interfaces.AbstractAccountsService):
             organization=agent.organization.name if agent.organization else None,
             role=self._convert_role_to_data_class(agent.role) if agent.role else None
         )
-
 
     @staticmethod
     def _convert_role_to_data_class(role: Role) -> dataclasses.Role:

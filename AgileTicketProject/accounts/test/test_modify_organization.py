@@ -9,12 +9,12 @@ class TestModifyOrganization(TestCase):
 
     def setUp(self):
         self.service = get_bootstrapper().get_account_service()
-        self.organization = Organization.objects.create(name='TestOrganization', Address='123 Main St')
+        self.organization = Organization.objects.create(name='TestOrganization', address='123 Main St')
 
     def test_modify_organization_successful(self):
         organization_data = OrganizationDataclass(
             name='TestOrganization',
-            Address='456 Oak St',
+            address='456 Oak St',
             phone=9876543210,
             description='Updated organization details'
         )
@@ -23,14 +23,14 @@ class TestModifyOrganization(TestCase):
 
         modified_organization = Organization.objects.get(name='TestOrganization')
         self.assertIsNotNone(modified_organization)
-        self.assertEqual(modified_organization.Address, '456 Oak St')
+        self.assertEqual(modified_organization.address, '456 Oak St')
         self.assertEqual(modified_organization.phone, '9876543210')
         self.assertEqual(modified_organization.description, 'Updated organization details')
 
     def test_modify_organization_non_existent(self):
         organization_data = OrganizationDataclass(
             name='NonExistentOrganization',
-            Address='789 Elm St',
+            address='789 Elm St',
             phone=5551234567,
             description='Attempt to modify a non-existent organization'
         )
@@ -48,7 +48,7 @@ class TestModifyOrganization(TestCase):
 
         modified_organization = Organization.objects.get(name='TestOrganization')
         self.assertIsNotNone(modified_organization)
-        self.assertEqual(modified_organization.Address, '123 Main St')  # Address should not be modified
+        self.assertEqual(modified_organization.address, '123 Main St')  # Address should not be modified
         self.assertEqual(modified_organization.phone, '5555555555')  # Only phone should be modified
         self.assertIsNone(modified_organization.description)  # Description should remain None
     #

@@ -36,6 +36,6 @@ class Role(models.Model):
 class Organization(models.Model):
     uid = models.CharField('Uid', unique=True, default=uuid.uuid4, max_length=36)
     name = models.CharField('Name', max_length=255, unique=True)
-    Address = models.CharField('Address', max_length=1000, null=True, blank=True)
+    address = models.CharField('Address', max_length=1000, null=True, blank=True)
     phone = models.CharField('Phone Number', max_length=16, null=True, blank=True)
     description = models.CharField('Description', max_length=1000, null=True, blank=True)
