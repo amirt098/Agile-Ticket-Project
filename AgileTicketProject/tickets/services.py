@@ -1,4 +1,6 @@
 import logging
+
+from accounts import dataclasses as account_dataclasses
 from . import interfaces
 from . import dataclasses
 from .models import Product, PreSetReply
@@ -16,20 +18,23 @@ class NotFound(Exception):
 
 
 class TicketService(interfaces.AbstractTicketServices):
-    def create_product(self, user, product_data: dataclasses.Product) -> dataclasses.Product:
-        logger.info(f"user: {user}, product: {product_data}")
+    def create_product(self, agent_data: account_dataclasses.Agent, product_data: dataclasses.Product) -> dataclasses.Product:
+        try:
         # pre_set_repley = PreSetReply.objects.get_or_create(
         #     name=product_data
         # )
-        created_product = Product.objects.create(
-            name=product_data.name,
-            owner=product_data.owner,
-            description=product_data.description,
+            created_product = Product.objects.create(
+                name=product_data.name,
+                owner=agent_data.organization,
+                description=product_data.description,
 
-        )
-        result = self._convert_product_to_dataclass(created_product)
-        logger.info(f'result: {result}')
-        return result
+            )
+            logger.info(f'product: {created_product.name} created successfully in organization {created_product.owner} by user: {agent_data.username}')
+            result = self._convert_product_to_dataclass(created_product)
+            return result
+        except Exception as e:
+            logger.error(f"Error during user creation: {e}", exc_info=True)
+            raise e
 
     @staticmethod
     def _convert_product_to_dataclass(product: Product) -> dataclasses.Product:
@@ -57,7 +62,6 @@ class TicketService(interfaces.AbstractTicketServices):
         except Exception as e:
             logger.error(f"Error during user creation: {e}", exc_info=True)
             raise e
-        pass
 
     def modify_ticket(self, user, ticket):
         pass
