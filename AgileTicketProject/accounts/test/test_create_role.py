@@ -1,8 +1,8 @@
 from django.test import TestCase
 from runner.bootstraper import get_bootstrapper
-from apps.accounts import exceptions
-from apps.accounts.models import Role, Organization
-from apps.accounts.dataclasses import Role as RoleDataclass, Organization as OrganizationDataclass
+from accounts import exceptions
+from accounts.models import Role, Organization
+from accounts.dataclasses import Role as RoleDataclass, Organization as OrganizationDataclass
 
 
 class TestCreateRole(TestCase):

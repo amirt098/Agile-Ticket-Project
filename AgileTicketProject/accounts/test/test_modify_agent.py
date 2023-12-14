@@ -1,8 +1,8 @@
 from django.test import TestCase
 from runner.bootstraper import get_bootstrapper
-from apps.accounts import exceptions
-from apps.accounts.models import User, Agent, Organization, Role
-from apps.accounts.dataclasses import Agent as AgentDataclass, Role as RoleDataclass
+from accounts import exceptions
+from accounts.models import User, Agent, Organization, Role
+from accounts.dataclasses import Agent as AgentDataclass, Role as RoleDataclass
 
 
 class TestModifyAgent(TestCase):

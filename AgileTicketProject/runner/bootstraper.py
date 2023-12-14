@@ -1,7 +1,7 @@
-from apps.accounts.services import AccountsService
-from apps.accounts.interfaces import AbstractAccountsService
-from apps.tickets.interfaces import AbstractTicketServices
-from apps.tickets.services import TicketService
+from accounts.services import AccountsService
+from accounts.interfaces import AbstractAccountsService
+from tickets.interfaces import AbstractTicketServices
+from tickets.services import TicketService
 
 
 class Bootstrapper:

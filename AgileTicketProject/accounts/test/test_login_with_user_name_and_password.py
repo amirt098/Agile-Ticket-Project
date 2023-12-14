@@ -1,7 +1,7 @@
 from django.test import TestCase
 from runner.bootstraper import get_bootstrapper
-from apps.accounts import exceptions
-from apps.accounts.models import User
+from accounts import exceptions
+from accounts.models import User
 
 
 class TestLoginWithUserNameAndPassword(TestCase):
@@ -12,7 +12,8 @@ class TestLoginWithUserNameAndPassword(TestCase):
 
     def test_login_with_username_and_password_successful(self):
         result = self.service.login_with_username_and_password('test_user', 'password123')
-        self.assertIsNone(result)
+        self.assertIsNotNone(result)
+        self.assertEqual(result.username, 'test_user')
 
     def test_login_with_username_and_password_invalid_password(self):
         with self.assertRaises(exceptions.LoginFailed):

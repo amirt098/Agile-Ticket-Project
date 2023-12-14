@@ -1,9 +1,9 @@
 
 from django.test import TestCase
 from runner.bootstraper import get_bootstrapper
-from apps.accounts import exceptions
-from apps.accounts.models import User
-from apps.accounts.dataclasses import User as UserDataclass
+from accounts import exceptions
+from accounts.models import User
+from accounts.dataclasses import User as UserDataclass
 
 
 class TestModifyUser(TestCase):

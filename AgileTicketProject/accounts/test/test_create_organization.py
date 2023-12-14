@@ -1,8 +1,8 @@
 from django.test import TestCase
 from runner.bootstraper import get_bootstrapper
-from apps.accounts import exceptions
-from apps.accounts.models import Organization
-from apps.accounts.dataclasses import Organization as OrganizationDataclass
+from accounts import exceptions
+from accounts.models import Organization
+from accounts.dataclasses import Organization as OrganizationDataclass
 
 
 class TestCreateOrganization(TestCase):
