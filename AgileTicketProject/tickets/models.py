@@ -28,7 +28,7 @@ class PreSetReply(models.Model):
 
 
 class Product(models.Model):
-    uid = models.CharField('Uid', unique=True, max_length=36)
+    uid = models.CharField('Uid', unique=True, default=uuid.uuid4, max_length=36)
     name = models.CharField('Name', max_length=100)
     owner = models.CharField("Organization Uid",  max_length=36)
     pre_set_reply = models.ForeignKey(PreSetReply, on_delete=models.CASCADE, null=True)
@@ -36,6 +36,9 @@ class Product(models.Model):
     image = models.ImageField('Image', upload_to='products/', null=True, blank=True)
     created_at = models.DateTimeField('Created at', auto_now_add=True)
     updated_at = models.DateTimeField('Updated at', auto_now=True)
+
+    class Meta:
+        unique_together = ('owner', 'name')
 
     def __str__(self):
         return self.name

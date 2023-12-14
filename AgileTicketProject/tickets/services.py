@@ -1,5 +1,7 @@
 import logging
 from . import interfaces
+from . import dataclasses
+from .models import Product, PreSetReply
 
 logger = logging.getLogger(__name__)
 
@@ -14,8 +16,28 @@ class NotFound(Exception):
 
 
 class TicketService(interfaces.AbstractTicketServices):
-    def create_product(self, user, product):
-        pass
+    def create_product(self, user, product_data: dataclasses.Product) -> dataclasses.Product:
+        logger.info(f"user: {user}, product: {product_data}")
+        # pre_set_repley = PreSetReply.objects.get_or_create(
+        #     name=product_data
+        # )
+        created_product = Product.objects.create(
+            name=product_data.name,
+            owner=product_data.owner,
+            description=product_data.description,
+
+        )
+        result = self._convert_product_to_dataclasses(created_product)
+        logger.info(f'result: {result}')
+        return result
+
+    @staticmethod
+    def _convert_product_to_dataclasses(product: Product) -> dataclasses.Product:
+        return dataclasses.Product(
+            name=product.name,
+            owner=product.owner,
+            description=product.description,
+        )
 
     def modify_product(self, user, product):
         pass
