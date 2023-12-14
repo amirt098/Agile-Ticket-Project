@@ -83,7 +83,7 @@ class TicketService(interfaces.AbstractTicketServices):
 
     @staticmethod
     def _convert_ticket_to_dataclass(ticket: dataclasses.Ticket) -> dataclasses.Ticket:
-        return dataclasses.Product(
+        return dataclasses.Ticket(
             title=ticket.title,
             owner=ticket.owner,
             description=ticket.description,
