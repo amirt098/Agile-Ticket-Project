@@ -1,6 +1,7 @@
 import logging
 
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login
+from django.shortcuts import get_object_or_404
 
 from .models import User, Agent, Role, Organization
 from . import dataclasses
@@ -12,19 +13,39 @@ logger = logging.getLogger(__name__)
 
 class AccountsService(interfaces.AbstractAccountsService):
 
-    def login_with_username_and_password(self, username, password):
+    def get_user_profile(self, user):
+        try:
+            if isinstance(user, Agent):
+                return Agent.objects.get(pk=user.pk)
+            elif isinstance(user, User):
+                return user
+        except Agent.DoesNotExist:
+            # Handle the case where the agent does not exist
+            return None
+
+    def login_with_username_and_password(self, username, password, request):
         user = authenticate(username=username, password=password)
 
         if user is not None:
             if user.is_active:
-                # Additional actions after successful login
-                return user  # You can return the user object if needed
+                login(request, user)
+                return user
             else:
                 logger.warning(f"User {username} is not active.")
-                raise exceptions.LoginFailed()
+                raise exceptions.LoginFailed("User is not active.")
         else:
-            logger.info(f"Invalid credentials for user {username}.")
-            raise exceptions.LoginFailed()
+            # Check if the user is an Agent
+            agent = get_object_or_404(Agent, username=username)
+            if agent.check_password(password):
+                if agent.is_active:
+                    login(request, agent)
+                    return agent
+                else:
+                    logger.warning(f"Agent {username} is not active.")
+                    raise exceptions.LoginFailed("Agent is not active.")
+            else:
+                logger.info(f"Invalid credentials for user or agent {username}.")
+                raise exceptions.LoginFailed("Invalid credentials.")
 
     def modify_user(self, user_data: dataclasses.User):
         logger.info(f'user: {user_data}')

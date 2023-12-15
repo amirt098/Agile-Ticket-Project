@@ -2,12 +2,17 @@ from django.contrib.auth.views import LoginView
 from django.shortcuts import render
 from django.views import View
 from django.http import HttpResponse
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
 
-from .dataclasses import Organization
+from .dataclasses import Organization, Agent
 from runner.bootstraper import get_bootstrapper
 from . import dataclasses, exceptions
-from .forms import create_dataclass_form, CreateUserForm, CreateAgentForm, CreateOrganizationForm
+from .forms import create_dataclass_form, CreateUserForm, CreateAgentForm, CreateOrganizationForm, UserProfileForm, \
+    AgentProfileForm
 import logging
+
+from .models import User
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +22,8 @@ def index(request):
 
 
 class UserLoginView(LoginView):
-    template_name = 'accounts/login.html'  # Replace with your actual template name
-    success_url = 'home'  # Replace with the URL name or path where the user should be redirected after login
+    template_name = 'accounts/login.html'
+    success_url = 'home'
 
 
 class CreateUserView(View):
@@ -114,3 +119,24 @@ class CreateOrganizationView(View):
                 return HttpResponse(f"Error during organization creation: {e}")
         else:
             return render(request, self.template_name, {'form': form})
+
+
+@method_decorator(login_required, name='dispatch')
+class ProfileView(View):
+    template_name = 'accounts/profile.html'
+    accounts_service = get_bootstrapper().get_account_service()
+
+    def get(self, request):
+        user = request.user
+        if isinstance(user, User):
+            profile_form = UserProfileForm(instance=user)
+        elif isinstance(user, Agent):
+            profile_form = AgentProfileForm(instance=user)
+        else:
+            print('else!!!!')
+            logger.info(f'else: {request.user}')
+            print(f'else: {request.user}')
+            # Handle other user types as needed
+            profile_form = None
+
+        return render(request, self.template_name, {'profile_form': profile_form})
