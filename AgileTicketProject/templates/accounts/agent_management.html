@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>User Management</h2>
+
+    <h3>Existing Users</h3>
+    <form id="selectUserForm">
+        <ul>
+            {% for user in users %}
+                <li>
+                    <input type="radio" name="selected_user" value="{{ user.username }}"> {{ user.username }}
+                    - {{ user.first_name }} {{ user.last_name }} - {{ user.email }}
+                </li>
+            {% endfor %}
+        </ul>
+        <button type="button" onclick="displayModifyForm()">Select User</button>
+    </form>
+
+    <!-- Modify user form -->
+    <div id="modifyUserFormContainer" style="display: none;">
+        <h3>Modify Selected User</h3>
+        <form id="modifyUserForm">
+            {% csrf_token %}
+            {{ modify_form.as_p }}
+            <button type="submit">Modify User</button>
+        </form>
+    </div>
+
+    <!-- Create user form -->
+    <h3>Create User</h3>
+    <form id="createUserForm">
+        {% csrf_token %}
+        {{ create_form.as_p }}
+        <button type="submit">Create User</button>
+    </form>
+
+    <!-- jQuery for AJAX form submission -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+            integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script>
+        function displayModifyForm() {
+            var selectedUser = $("input[name='selected_user']:checked").val();
+            if (selectedUser) {
+                $("#modifyUserFormContainer").show();
+            } else {
+                alert("Please select a user first.");
+            }
+        }
+
+        $(document).ready(function () {
+            // ... (Existing JavaScript code)
+
+            $("#createUserForm").submit(function (e) {
+                e.preventDefault();
+
+                $.ajax({
+                    type: "POST",
+                    url: "{% url 'register_agent' %}",
+                    data: $(this).serialize(),
+                    success: function (response) {
+                        if (response.success) {
+                            // Clear form fields
+                            $("#createUserForm")[0].reset();
+                            // Display success message
+                            $("#global-messages").html('<div class="alert alert-success" role="alert">' + response.message + '</div>');
+                        } else {
+                            // Display error messages
+                            var errors = response.errors || {};
+                            var errorHtml = '<div class="alert alert-danger" role="alert">' + response.message + '</div>';
+                            for (var field in errors) {
+                                errorHtml += '<div class="alert alert-danger" role="alert">' + errors[field] + '</div>';
+                            }
+                            $("#global-messages").html(errorHtml);
+                        }
+                    },
+                    error: function (error) {
+                        console.error("Error processing form:", error);
+                        $("#global-messages").html('<div class="alert alert-danger" role="alert">Error processing form. Please try again.</div>');
+                    }
+                });
+            });
+        });
+    </script>
+
+{% endblock %}

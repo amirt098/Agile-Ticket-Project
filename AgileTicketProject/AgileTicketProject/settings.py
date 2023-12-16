@@ -9,9 +9,12 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import logging
+import sys
 from pathlib import Path
 import os
+import django
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -142,3 +145,30 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format': os.getenv("ENVIRONMENT", '') + '|{levelname}|{asctime}|{name}|{funcName}|{lineno}|{message}',
+            'style': '{',
+        },
+    },
+
+    'handlers': {
+        'console': {
+            'level': os.environ.get("LOG_LEVEL", "DEBUG"),
+            'class': 'logging.StreamHandler',
+            'stream': sys.stdout,
+            'formatter': 'standard',
+        },
+
+    },
+    'root': {
+        'level': os.getenv("LOG_LEVEL", "DEBUG"),
+        'handlers': os.getenv("HANDLERS", 'console').split(","),
+        'propagate': True
+    }
+
+}

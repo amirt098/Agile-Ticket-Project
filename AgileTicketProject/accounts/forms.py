@@ -1,7 +1,7 @@
 from django import forms
 from dataclasses import fields
 
-from accounts.models import User, Agent
+from accounts.models import User, Organization, Role
 
 
 def create_dataclass_form(data_class):
@@ -36,23 +36,31 @@ def create_dataclass_form(data_class):
     return DataClassForm
 
 
-class CreateUserForm(forms.Form):
-    username = forms.CharField(max_length=255)
-    password = forms.CharField(widget=forms.PasswordInput)
-    first_name = forms.CharField(required=False)
-    last_name = forms.CharField(required=False)
-    email = forms.EmailField(required=False)
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email']  # Add or modify fields as needed
 
 
-class CreateAgentForm(forms.Form):
-    username = forms.CharField(max_length=255)
+class CreateUserForm(UserForm):
     password = forms.CharField(widget=forms.PasswordInput)
-    first_name = forms.CharField(required=False)
-    last_name = forms.CharField(required=False)
-    email = forms.EmailField(required=False)
-    organization = forms.CharField()
-    role_name = forms.CharField(required=False)
-    role_description = forms.CharField(required=False)
+
+    class Meta(UserForm.Meta):
+        # Add any additional fields or customization specific to user creation
+        pass
+
+
+class AgentForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'password', 'first_name', 'last_name', 'email', 'organization',
+                  'role']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['organization'].required = True
+        self.fields['role'].required = False
+        self.fields['password'] = forms.CharField(widget=forms.PasswordInput)
 
 
 class CreateOrganizationForm(forms.Form):
@@ -70,7 +78,7 @@ class UserProfileForm(forms.ModelForm):
 
 class AgentProfileForm(forms.ModelForm):
     class Meta:
-        model = Agent
+        model = User
         fields = ['username', 'organization', 'role', 'first_name', 'last_name', 'email']
 
     def __init__(self, *args, **kwargs):

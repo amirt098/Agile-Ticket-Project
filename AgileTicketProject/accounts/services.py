@@ -1,9 +1,9 @@
 import logging
 
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, get_user_model
 from django.shortcuts import get_object_or_404
 
-from .models import User, Agent, Role, Organization
+from .models import User, Role, Organization
 from . import dataclasses
 from . import interfaces
 from . import exceptions
@@ -11,148 +11,127 @@ from . import exceptions
 logger = logging.getLogger(__name__)
 
 
-class AccountsService(interfaces.AbstractAccountsService):
-
-    def get_user_profile(self, user):
-        try:
-            if isinstance(user, Agent):
-                return Agent.objects.get(pk=user.pk)
-            elif isinstance(user, User):
-                return user
-        except Agent.DoesNotExist:
-            # Handle the case where the agent does not exist
-            return None
+class AccountsService:
 
     def login_with_username_and_password(self, username, password, request):
-        user = authenticate(username=username, password=password)
+        logger.info(f'username: {username}, password: {password}')
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            logger.info('invalid user name')
+            raise exceptions.LoginFailed()
+        if not user.check_password(password):
+            logger.info('invalid password')
+            raise exceptions.LoginFailed()
 
-        if user is not None:
-            if user.is_active:
-                login(request, user)
-                return user
-            else:
-                logger.warning(f"User {username} is not active.")
-                raise exceptions.LoginFailed("User is not active.")
+        logger.info(f'user: {user}')
+        if user.is_active:
+            login(request, user)
+            logger.info(f'login user: {user}')
+            return user
         else:
-            # Check if the user is an Agent
-            agent = get_object_or_404(Agent, username=username)
-            if agent.check_password(password):
-                if agent.is_active:
-                    login(request, agent)
-                    return agent
-                else:
-                    logger.warning(f"Agent {username} is not active.")
-                    raise exceptions.LoginFailed("Agent is not active.")
-            else:
-                logger.info(f"Invalid credentials for user or agent {username}.")
-                raise exceptions.LoginFailed("Invalid credentials.")
+            logger.warning(f"User {username} is not active.")
+            raise exceptions.LoginFailed()
+
+    def get_agents(self, agent):
+        logger.info(f'agent: {agent}')
+        if not agent.is_agent:
+            raise Exception('You do not have Permission to do this')
+        agents = User.objects.filter(organization=agent.organization)
+        result = agents
+        logger.info(f'agents: {agents}')
+        return result
+
+    def get_user_profile(self, user):
+        user_model = get_user_model()
+
+        try:
+            if isinstance(user, user_model):
+                return user
+        except user_model.DoesNotExist:
+            # Handle the case where the user does not exist
+            return None
 
     def modify_user(self, user_data: dataclasses.User):
-        logger.info(f'user: {user_data}')
+        return self._modify_user(user_data)
+
+    def modify_agent(self, agent_data: dataclasses.Agent):
+        return self._modify_user(agent_data)
+
+    def _modify_user(self, data):
         try:
-            user = User.objects.get(username=user_data.username)
-            if user_data.first_name:
-                user.first_name = user_data.first_name
-            if user_data.last_name:
-                user.last_name = user_data.last_name
-            if user_data.email:
-                user.email = user_data.email
-            if user_data.password:
-                user.set_password(user_data.password)
+            user = get_object_or_404(User, username=data.username)
+
+            if data.first_name:
+                user.first_name = data.first_name
+            if data.last_name:
+                user.last_name = data.last_name
+            if data.email:
+                user.email = data.email
+            if data.password:
+                user.set_password(data.password)
+
+            if user.is_agent:
+                if data.organization:
+                    org = get_object_or_404(Organization, name=data.organization)
+                    user.organization = org
+                if data.role:
+                    role, _ = Role.objects.get_or_create(
+                        name=data.role.name,
+                        defaults={"description": data.role.description}
+                    )
+                    user.role = role
+
             user.save()
             logger.info(f"User {user.username} modified successfully.")
+
             result = self._convert_user_to_data_class(user)
             logger.info(f"result: {result}")
             return result
         except User.DoesNotExist:
-            logger.warning(f"User {user_data.username} does not exist.")
             raise exceptions.UserNotFound()
+        except (Organization.DoesNotExist, Role.DoesNotExist):
+            raise exceptions.OrganizationOrRoleNotFound()
         except Exception as e:
             logger.error(f"Error during user modification: {e}", exc_info=True)
             raise e
 
-    def modify_agent(self, agent_data: dataclasses.Agent):
+    def create_user(self, user_data):
+        logger.info(f'user_data: {user_data}')
         try:
-            agent = Agent.objects.get(username=agent_data.username)
-            if agent_data.first_name:
-                agent.first_name = agent_data.first_name
-            if agent_data.last_name:
-                agent.last_name = agent_data.last_name
-            if agent_data.email:
-                agent.email = agent_data.email
-            if agent_data.organization:
-                org = Organization.objects.get(name=agent_data.organization)
-                agent.organization = org
-            created = False
-            if agent_data.role:
-                role, created = Role.objects.get_or_create(
-                    name=agent_data.role.name,
-                    defaults={
-                        "description": agent_data.role.description})
-                agent.role = role
-            if agent_data.password:
-                agent.set_password(agent_data.password)
-            agent.save()
-            logger.info(f"Agent {agent.username} modified successfully.")
+            organization = get_object_or_404(Organization, name=user_data.organization)
 
-            if created:
-                logger.info(f"Role: {role}, created.")
-            result = self._convert_agent_to_data_class(agent)
-            logger.info(f"result: {result}")
-            return result
-        except Organization.DoesNotExist:
-            raise exceptions.OrganizationNotFound()
-        except Agent.DoesNotExist:
-            logger.warning(f"Agent {agent_data.username} does not exist.")
-            raise exceptions.UserNotFound()
-        except Exception as e:
-            logger.error(f"Error during agent modification: {e}", exc_info=True)
-            raise e
+            if User.objects.filter(username=user_data.username).exists():
+                logger.info(f'user name is duplicated.')
+                raise exceptions.DuplicatedUsername()
 
-    def create_agent(self, agent_data: dataclasses.Agent):
-        try:
-            organization = Organization.objects.get(name=agent_data.organization)
-            agent = Agent.objects.create(username=agent_data.username, organization=organization)
-            agent.set_password(agent_data.password)
-            if agent_data.role:
-                role, created = Role.objects.get_or_create(
-                    name=agent_data.role.name,
-                    defaults={
-                        "description": agent_data.role.description})
-                agent.role = role
-            if agent_data.email:
-                agent.email = agent_data.email
-            if agent_data.first_name:
-                agent.first_name = agent_data.first_name
-            if agent_data.last_name:
-                agent.last_name = agent_data.last_name
-            agent.save()
-            logger.info(f"Agent {agent.username} created successfully.")
-            result = self._convert_agent_to_data_class(agent)
-            logger.info(f"result: {result}")
-            return result
-        except Organization.DoesNotExist:
-            logger.warning(f"Organization with name {agent_data.organization} does not exist.")
-            raise exceptions.OrganizationNotFound()
-        except Exception as e:
-            logger.error(f"Error during agent creation: {e}", exc_info=True)
-            raise e
-
-    def create_user(self, user_data: dataclasses.User):
-        try:
-            logger.info(f'user_data: {user_data}')
-            user = User.objects.create(username=user_data.username)
+            user = User.objects.create(username=user_data.username, organization=organization,
+                                       is_agent=user_data.is_agent)
             user.set_password(user_data.password)
+
             if user_data.email:
                 user.email = user_data.email
             if user_data.first_name:
                 user.first_name = user_data.first_name
             if user_data.last_name:
                 user.last_name = user_data.last_name
+
+            if user.is_agent:
+                if user_data.role:
+                    role, _ = Role.objects.get_or_create(
+                        name=user_data.role.name,
+                        defaults={"description": user_data.role.description}
+                    )
+                    user.role = role
+
             user.save()
             logger.info(f"User {user.username} created successfully.")
-            logger.info(f"User {user.username} returned")
-            return self._convert_user_to_data_class(user)
+
+            result = self._convert_user_to_data_class(user)
+            logger.info(f"result: {result}")
+            return result
+        except Organization.DoesNotExist:
+            raise exceptions.OrganizationNotFound()
         except Exception as e:
             logger.error(f"Error during user creation: {e}", exc_info=True)
             raise e
@@ -218,7 +197,7 @@ class AccountsService(interfaces.AbstractAccountsService):
 
     def change_agent_role(self, role_data: dataclasses.Role, agent_data: dataclasses.Agent):
         try:
-            agent = Agent.objects.get(username=agent_data.username)
+            agent = User.objects.get(username=agent_data.username)
             # if not role_data or not agent_data:
             #     logger.info(f'Did not provided essential data.')
             #     raise exceptions.NotProvidedData()
@@ -231,7 +210,7 @@ class AccountsService(interfaces.AbstractAccountsService):
             logger.info(f"Role of Agent {agent.username} changed to {role.name} successfully.")
             result = self._convert_agent_to_data_class(agent)
             logger.info(f"result: {result}")
-        except Agent.DoesNotExist:
+        except User.DoesNotExist:
             logger.warning(f"Agent with username {agent_data.username} does not exist.")
             raise exceptions.UserNotFound()
         except Exception as e:
@@ -256,7 +235,7 @@ class AccountsService(interfaces.AbstractAccountsService):
             phone=int(org.phone) if org.phone else None,
         )
 
-    def _convert_agent_to_data_class(self, agent: Agent) -> dataclasses.Agent:
+    def _convert_agent_to_data_class(self, agent: User) -> dataclasses.Agent:
         return dataclasses.Agent(
             username=agent.username,
             first_name=agent.first_name,

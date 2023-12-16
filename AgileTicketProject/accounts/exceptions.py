@@ -38,3 +38,8 @@ class OrganizationNotFound(NotFound):
 class DuplicateOrganizationName(BadRequest):
     def __init__(self):
         super().__init__(f'Organization Name is Duplicated!')
+
+
+class DuplicatedUsername(BadRequest):
+    def __init__(self):
+        super().__init__(f'User Name is Duplicated!')
