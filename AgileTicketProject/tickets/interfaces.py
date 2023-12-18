@@ -34,7 +34,7 @@ class AbstractTicketServices(abc.ABC):
         """
         raise NotImplementedError
 
-    def create_ticket(self, user, ticket):
+    def create_ticket(self, user, ticket, product):
         """
         Create a new ticket.
 

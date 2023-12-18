@@ -13,6 +13,7 @@ class PreSetReply:
 class Product:
     name: str
     owner: str
+    uid: str = None
     description: str = None
     image: str = None
     pre_set_replay = PreSetReply = None
@@ -27,6 +28,7 @@ class ProductList:
 class Ticket:
     title: str
     owner: str
+    product: Product
     description: str = None
     status: str = None
     priority: str = None

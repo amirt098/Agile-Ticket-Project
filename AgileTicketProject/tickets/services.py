@@ -42,12 +42,38 @@ class TicketService(interfaces.AbstractTicketServices):
             name=product.name,
             owner=product.owner,
             description=product.description,
+            uid=product.uid,
         )
 
     def modify_product(self, user, product):
         pass
 
-    def create_ticket(self, username: str, ticket_data: dataclasses.Ticket):
+    def create_ticket(self, username: str, ticket_data: dataclasses.Ticket, product: dataclasses.Product):
+        try:
+            ticket = dataclasses.Ticket.objects.create(title= ticket_data.title, owner= ticket_data.owner, product_uid=product.uid,)
+            if ticket_data.description:
+                ticket.description = ticket_data.description
+            if ticket_data.priority:
+                ticket.priority = ticket_data.priority
+            ticket.status = 'Open'
+            ticket.save()
+            logger.info(f"User {username} created a ticket with title {ticket.title} successfully.")
+            logger.info(f"ticket {username} returned")
+            return self._convert_ticket_to_dataclass(ticket)
+        except Exception as e:
+            logger.error(f"Error during ticket creation: {e}", exc_info=True)
+            raise e
+
+    def modify_ticket(self, user, ticket):
+        pass
+
+    def change_ticket_priority(self, user, ticket, priority):
+        pass
+
+    def assign_ticket(self, user, ticket, to_be_assigned_user):
+        pass
+
+    def add_follow_up(self, username: str, ticket, follow_up):
         try:
             ticket = dataclasses.Ticket.objects.create(title= ticket_data.title, owner= ticket_data.owner)
             if ticket_data.description:
@@ -60,19 +86,8 @@ class TicketService(interfaces.AbstractTicketServices):
             logger.info(f"ticket {username} returned")
             return self._convert_ticket_to_dataclass(ticket)
         except Exception as e:
-            logger.error(f"Error during user creation: {e}", exc_info=True)
+            logger.error(f"Error during ticket creation: {e}", exc_info=True)
             raise e
-
-    def modify_ticket(self, user, ticket):
-        pass
-
-    def change_ticket_priority(self, user, ticket, priority):
-        pass
-
-    def assign_ticket(self, user, ticket, to_be_assigned_user):
-        pass
-
-    def add_follow_up(self, user, ticket, follow_up):
         pass
 
     def add_attachment_to_ticket(self, user, attachment, ticket):

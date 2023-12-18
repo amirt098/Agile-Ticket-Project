@@ -48,6 +48,7 @@ class Ticket(models.Model):
     title = models.CharField('Title', max_length=255)
     owner = models.CharField(blank=True, null=True, verbose_name='Owner user uid',  max_length=36)
     description = models.TextField('Description', blank=True, null=True,  max_length=500)
+    product_uid = models.CharField('Product_Uid', null=False, max_length=36)
 
     OPEN_STATUS = 1
     REOPENED_STATUS = 2
