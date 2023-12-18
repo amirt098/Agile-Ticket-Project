@@ -45,9 +45,22 @@ class TicketService(interfaces.AbstractTicketServices):
             uid=product.uid,
         )
 
-    def modify_product(self, user, product):
+    def modify_product(self, username: str, product_data: dataclasses.Product):
+        try:
+            product = Product.objects.get(product_data.uid)
+            if product_data.description:
+                product.description = product_data.description
+            if product_data.name:
+                product.name = product_data.name
+            if product_data.owner:
+                product.owner = product_data.owner
+            product.save()
+            logger.info(f"User {username} modified product {product.uid} successfully.")
+            return self._convert_product_to_dataclass(product)
+        except Exception as e:
+            logger.error(f"Error during ticket creation: {e}", exc_info=True)
+            raise e
 
-        pass
 
     def create_ticket(self, username: str, ticket_data: dataclasses.Ticket, product: dataclasses.Product):
         try:
@@ -65,10 +78,28 @@ class TicketService(interfaces.AbstractTicketServices):
             logger.error(f"Error during ticket creation: {e}", exc_info=True)
             raise e
 
-    def modify_ticket(self, user, ticket):
-        pass
+    def modify_ticket(self, username: str, ticket_data: dataclasses.Ticket):
+        try:
+            ticket = Ticket.objects.get(ticket_data.uid)
+            if ticket_data.status:
+                ticket.status = ticket_data.status
+            if ticket_data.title:
+                ticket.title = ticket_data.title
+            if ticket_data.assigned_to:
+                ticket.assigned_to = ticket_data.assigned_to
+            if ticket_data.priority:
+                ticket.priority = ticket_data.priority
+            if ticket_data.description:
+                ticket.description = ticket_data.description
+            ticket.save()
+            logger.info(f"ticket {ticket.uid} modified successfully")
+            return self._convert_ticket_to_dataclass(ticket)
+        except Exception as e:
+            logger.error(f"Error during ticket modified: {e}", exc_info=True)
+            raise e
 
     def change_ticket_priority(self, user, ticket, priority):
+        # in ticket modify handled
         pass
 
     def assign_ticket(self, username: str, ticket_data: dataclasses.Ticket, to_be_assigned_username: str):
@@ -109,6 +140,7 @@ class TicketService(interfaces.AbstractTicketServices):
         pass
 
     def get_tickets(self, user, organization, agent):
+
         # add proper filters to be usable for agent, user, .....
         pass
 
