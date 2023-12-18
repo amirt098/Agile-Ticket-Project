@@ -7,26 +7,6 @@ except ImportError:
     from datetime import datetime as timezone
 
 
-class PreSetReply(models.Model):
-    uid = models.CharField('Uid', unique=True,  max_length=36, default=uuid.uuid4)
-    name = models.CharField(
-        'Name',
-        max_length=100,
-        help_text='Only used to assist users with selecting a reply - not '
-                  'shown to the user.',
-    )
-
-    body = models.TextField(
-        'Body',
-        help_text='Context available: {{ ticket }} - ticket object (eg '
-                  '{{ ticket.title }}); {{ queue }} - The queue; and {{ user }} '
-                  '- the current user.',
-    )
-
-    def __str__(self):
-        return '%s' % self.name
-
-
 class Product(models.Model):
     uid = models.CharField('Uid', unique=True, default=uuid.uuid4, max_length=36)
     name = models.CharField('Name', max_length=100)

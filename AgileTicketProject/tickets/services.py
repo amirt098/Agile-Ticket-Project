@@ -1,9 +1,9 @@
 import logging
-
+from accounts.models import Organization as account_organization
 from accounts import dataclasses as account_dataclasses
 from . import interfaces
 from . import dataclasses
-from .models import Product, PreSetReply, Ticket
+from .models import Product, Ticket
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +147,8 @@ class TicketService(interfaces.AbstractTicketServices):
     def get_products(self, **filters):
         return Product.objects.filter(**filters)
 
-        pass
+    def get_organizations(self, **filters):
+        return account_organization.objects.filter(**filters)
 
     @staticmethod
     def _convert_ticket_to_dataclass(ticket: dataclasses.Ticket) -> dataclasses.Ticket:
