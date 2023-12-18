@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 
 @dataclass
@@ -35,9 +35,11 @@ class Ticket:
     priority: str = None
     assigned_to: str = None
 
+
 @dataclass
 class TicketList:
     results: List[Ticket]
+
 
 @dataclass
 class FollowUp:
@@ -47,14 +49,12 @@ class FollowUp:
     text: str = None
     user: str = None
 
+
 @dataclass
 class FollowUpList:
     results: List[FollowUp]
 
 
-
-
-
-
-
-
+@dataclass
+class ProductFilter:
+    owner: Optional[str] = None

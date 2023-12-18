@@ -1,8 +1,9 @@
 import logging
-from accounts.models import Organization as account_organization
+
 from accounts import dataclasses as account_dataclasses
-from . import interfaces
+from accounts.models import Organization as account_organization
 from . import dataclasses
+from . import interfaces
 from .models import Product, Ticket
 
 logger = logging.getLogger(__name__)
@@ -18,11 +19,9 @@ class NotFound(Exception):
 
 
 class TicketService(interfaces.AbstractTicketServices):
-    def create_product(self, agent_data: account_dataclasses.Agent, product_data: dataclasses.Product) -> dataclasses.Product:
+    def create_product(self, agent_data: account_dataclasses.Agent,
+                       product_data: dataclasses.Product) -> dataclasses.Product:
         try:
-        # pre_set_repley = PreSetReply.objects.get_or_create(
-        #     name=product_data
-        # )
             created_product = Product.objects.create(
                 name=product_data.name,
                 owner=agent_data.organization,
@@ -30,7 +29,8 @@ class TicketService(interfaces.AbstractTicketServices):
                 presetreply=product_data.pre_set_replay,
 
             )
-            logger.info(f'product: {created_product.name} created successfully in organization {created_product.owner} by user: {agent_data.username}')
+            logger.info(
+                f'product: {created_product.name} created successfully in organization {created_product.owner} by user: {agent_data.username}')
             result = self._convert_product_to_dataclass(created_product)
             return result
         except Exception as e:
@@ -62,10 +62,10 @@ class TicketService(interfaces.AbstractTicketServices):
             logger.error(f"Error during ticket creation: {e}", exc_info=True)
             raise e
 
-
     def create_ticket(self, username: str, ticket_data: dataclasses.Ticket, product: dataclasses.Product):
         try:
-            ticket = dataclasses.Ticket.objects.create(title= ticket_data.title, owner= ticket_data.owner, product_uid=product.uid,)
+            ticket = dataclasses.Ticket.objects.create(title=ticket_data.title, owner=ticket_data.owner,
+                                                       product_uid=product.uid, )
             if ticket_data.description:
                 ticket.description = ticket_data.description
             if ticket_data.priority:
@@ -80,6 +80,9 @@ class TicketService(interfaces.AbstractTicketServices):
             raise e
 
     def modify_ticket(self, username: str, ticket_data: dataclasses.Ticket):
+        # user = User.objects.get(username=username)
+        #
+        #     raise Exception()
         try:
             ticket = Ticket.objects.get(ticket_data.uid)
             if ticket_data.status:
@@ -128,14 +131,14 @@ class TicketService(interfaces.AbstractTicketServices):
     def add_follow_up(self, username: str, ticket_data: dataclasses.Ticket, follow_up_data: dataclasses.FollowUp):
         try:
 
-            follow_up = dataclasses.FollowUp.objects.create(title= follow_up_data.title, owner= username, ticket_uid=ticket_data.uid)
+            follow_up = dataclasses.FollowUp.objects.create(title=follow_up_data.title, owner=username,
+                                                            ticket_uid=ticket_data.uid)
             follow_up.save()
             logger.info(f"User {username} created a followup to ticket {ticket_data.uid}  successfully.")
             return self._convert_followup_to_dataclass(follow_up)
         except Exception as e:
             logger.error(f"Error during ticket creation: {e}", exc_info=True)
             raise e
-
 
     def add_attachment_to_ticket(self, user, attachment, ticket):
         pass
@@ -144,8 +147,23 @@ class TicketService(interfaces.AbstractTicketServices):
         return Ticket.objects.filter(**filters)
 
         # add proper filters to be usable for agent, user, .....
-    def get_products(self, **filters):
-        return Product.objects.filter(**filters)
+
+    def get_products(self, filters: dataclasses.ProductFilter = None):
+        logger.info(f'filters: {filters}')
+
+        queryset = Product.objects.all()
+
+        if filters:
+            if filters.owner:
+                queryset = queryset.filter(owner__icontains=filters.owner)
+            # Add more filter conditions as needed
+
+        result = dataclasses.ProductList(
+            results=[self._convert_product_to_dataclass(product) for product in queryset]
+        )
+
+        logger.info(f"result: {result}")
+        return result
 
     def get_organizations(self, **filters):
         return account_organization.objects.filter(**filters)
@@ -168,5 +186,3 @@ class TicketService(interfaces.AbstractTicketServices):
             text=followup.text,
             date=followup.date,
         )
-    # def add_pre_set_reply(self, agent: dataclasses.Agent, pre_set_reply: dataclasses.Agent):
-    #     pass

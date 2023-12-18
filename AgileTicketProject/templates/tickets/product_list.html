@@ -1,0 +1,39 @@
+{% block content %}
+    <h2>Product List</h2>
+
+    <!-- Filter Section -->
+    <div class="mb-4">
+        <form method="get" action="{% url 'product_list' %}">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="owner">Owner:</label>
+                    <input type="text" name="owner" id="owner" class="form-control" value="{{ request.GET.owner }}">
+                </div>
+                <!-- Add more filter fields as needed -->
+
+                <div class="col-md-3 mt-4">
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Product List Section -->
+    <div class="row">
+        {% for product in products %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text">{{ product.description }}</p>
+                        <p class="card-text">Owner: {{ product.owner }}</p>
+                        <!-- Add other fields as needed -->
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock content %}
