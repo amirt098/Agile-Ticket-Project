@@ -1,3 +1,5 @@
+{% extends 'base.html' %}
+
 {% block content %}
     <h2>Product List</h2>
 
@@ -7,7 +9,7 @@
             <div class="row">
                 <div class="col-md-3">
                     <label for="owner">Owner:</label>
-                    <input type="text" name="owner" id="owner" class="form-control" value="{{ request.GET.owner }}">
+                    <input type="text" name="owner" id="owner" class="form-control" value="{{ filters.owner }}">
                 </div>
                 <!-- Add more filter fields as needed -->
 

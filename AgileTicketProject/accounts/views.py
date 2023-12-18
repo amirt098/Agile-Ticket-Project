@@ -134,6 +134,7 @@ class CreateUserView(View):
         if form.is_valid():
             user = form.save(commit=False)
             user.is_agent = False
+
             try:
                 result = self.service.create_user(user)
                 messages.success(request, f'User: {result.username} Created Success Fully.')
@@ -232,3 +233,7 @@ class AgentManagementView(LoginRequiredMixin, View):
 class AboutUsView(View):
     def get(self, request):
         return render(request, 'about_us.html')
+
+
+class OrganizationListView(View):
+    pass

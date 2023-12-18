@@ -19,6 +19,11 @@
                         <a class="nav-link" href="{% url 'agent_management' %}"><i class='fad fa-user-cog'></i> Agent Management</a>
                     </li>
                 {% endif %}
+                {% if request.user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard' %}"><i class='fad fa-user-cog'></i> Dashboard</a>
+                    </li>
+                {% endif %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'about_us' %}"><i class='fad fa-envelope-square'></i> About us</a>
                 </li>

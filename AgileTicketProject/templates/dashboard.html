@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Dashboard</h2>
+    <style>
+        .card-title, .card-text {
+            color: black;
+        }
+    </style>
+    <!-- Navigation Cards -->
+    <div class="card bg-light" style="cursor: pointer;" onclick="navigateTo('get_products')">
+        <div class="card-body">
+            <h5 class="card-title">Get Products</h5>
+            <p class="card-text">Click to view products</p>
+        </div>
+    </div>
+
+    <div class="card" style="cursor: pointer;" onclick="navigateTo('get_organizations')">
+        <div class="card-body">
+            <h5 class="card-title">Get Organizations</h5>
+            <p class="card-text">Click to view organizations</p>
+        </div>
+    </div>
+
+    <!-- Add more cards for other sections as needed -->
+    </div>
+
+    <script>
+        function navigateTo(section) {
+            window.location.href = `/${section}/`;
+        }
+    </script>
+{% endblock content %}

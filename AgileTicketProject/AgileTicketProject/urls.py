@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from accounts.views import index
 from accounts.views import AboutUsView
+from tickets.views import DashboardView
 
 
 urlpatterns = [
@@ -25,5 +26,6 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('tickets/', include('tickets.urls')),
     path('about_us/',  AboutUsView.as_view(), name='about_us'),
+    path('dashboard/',  DashboardView.as_view(), name='dashboard'),
     path('admin/', admin.site.urls),
 ]
