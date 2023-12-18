@@ -88,7 +88,7 @@ class FollowUp(models.Model):
     """
     A FollowUp is a comment to a ticket.
     """
-    ticket_uid = models.CharField('Ticket_uid')
+    ticket_uid = models.CharField('Ticket_uid', max_length=36)
     date = models.DateTimeField('Date', default=timezone.now)
     title = models.CharField('Title', max_length=200)
     text = models.TextField('Text', blank=True, null=True,  max_length=500)
