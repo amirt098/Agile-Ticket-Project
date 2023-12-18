@@ -6,7 +6,6 @@ from . import dataclasses
 from .forms import CreateProductForm
 from runner.bootstraper import get_bootstrapper
 from . import dataclasses
-from .forms import ProductForm
 
 
 class ProductListView(View):
@@ -39,8 +38,9 @@ class CreateProductView(View):
         if form.is_valid():
             try:
                 product_data = dataclasses.Product(**form.cleaned_data)
-                result = self.service.create_product(product_data= product_data,agent_data= request.user)
-                messages.success(request, f'Product {result.name} created success fully.')
+                if request.user.is_agent:
+                    result = self.service.create_product(product_data= product_data,agent_data= request.user)
+                    messages.success(request, f'Product {result.name} created success fully.')
                 return redirect('create_product')
             except Exception as e:
                 messages.error(request, f"Error during product creation: {e}")
