@@ -162,7 +162,7 @@ class CreateOrganizationView(View):
                 organization_data = dataclasses.Organization(**form.cleaned_data)
                 result = self.service.create_organization(organization_data)
                 request.session['organization'] = result.name
-                messages.success(request, 'Organization {result.name} created success fully.')
+                messages.success(request, f'Organization {result.name} created success fully.')
                 return redirect('register_agent')
             except Exception as e:
                 messages.error(request, f"Error during organization creation: {e}")

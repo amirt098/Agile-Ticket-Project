@@ -40,8 +40,7 @@ class CreateProductView(View):
             try:
                 product_data = dataclasses.Product(**form.cleaned_data)
                 result = self.service.create_product(product_data= product_data,agent_data= request.user)
-                request.session['product'] = result.name
-                messages.success(request, 'Product {result.name} created success fully.')
+                messages.success(request, f'Product {result.name} created success fully.')
                 return redirect('create_product')
             except Exception as e:
                 messages.error(request, f"Error during product creation: {e}")
