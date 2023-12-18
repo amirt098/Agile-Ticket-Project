@@ -104,7 +104,7 @@ class TicketService(interfaces.AbstractTicketServices):
 
     def assign_ticket(self, username: str, ticket_data: dataclasses.Ticket, to_be_assigned_username: str):
         try:
-            ticket = Ticket.get(ticket_data.uid)
+            ticket = Ticket.objects.get(ticket_data.uid)
             ticket.assigned_to = to_be_assigned_username
             ticket.save()
             logger.info(f"User {username} assigned a ticket {ticket.uid} to {to_be_assigned_username} successfully.")
@@ -115,7 +115,7 @@ class TicketService(interfaces.AbstractTicketServices):
 
     def change_status_ticket(self, username: str, ticket_data: dataclasses.Ticket, status: str):
         try:
-            ticket = Ticket.get(ticket_data.uid)
+            ticket = Ticket.objects.get(ticket_data.uid)
             ticket.status = status
             ticket.save()
             logger.info(f"User {username} change status ticket {ticket.uid} to {status} successfully.")
