@@ -144,7 +144,7 @@ class TicketService(interfaces.AbstractTicketServices):
 
         # add proper filters to be usable for agent, user, .....
     def get_products(self, **filters):
-        return Ticket.objects.filter(**filters)
+        return Product.objects.filter(**filters)
 
         pass
 
