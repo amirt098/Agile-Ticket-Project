@@ -139,12 +139,13 @@ class TicketService(interfaces.AbstractTicketServices):
     def add_attachment_to_ticket(self, user, attachment, ticket):
         pass
 
-    def get_tickets(self, user, organization, agent):
+    def get_tickets(self, **filters):
+        return Ticket.objects.filter(**filters)
 
         # add proper filters to be usable for agent, user, .....
-        pass
+    def get_products(self, **filters):
+        return Ticket.objects.filter(**filters)
 
-    def get_products(self, user, organization):
         pass
 
     @staticmethod
