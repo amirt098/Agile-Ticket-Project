@@ -45,8 +45,9 @@ class Product(models.Model):
 
 
 class Ticket(models.Model):
+    uid = models.CharField('Uid', unique=True, default=uuid.uuid4, max_length=36)
     title = models.CharField('Title', max_length=255)
-    owner = models.CharField(blank=True, null=True, verbose_name='Owner user uid',  max_length=36)
+    owner = models.CharField(blank=True, null=False, verbose_name='Owner user uid',  max_length=36)
     description = models.TextField('Description', blank=True, null=True,  max_length=500)
     product_uid = models.CharField('Product_Uid', null=False, max_length=36)
 
@@ -87,7 +88,7 @@ class FollowUp(models.Model):
     """
     A FollowUp is a comment to a ticket.
     """
-    ticket = models.ForeignKey(Ticket, verbose_name='Ticket', on_delete=models.CASCADE)
+    ticket_uid = models.ForeignKey(Ticket, verbose_name='Ticket_uid', on_delete=models.CASCADE)
     date = models.DateTimeField('Date', default=timezone.now)
     title = models.CharField('Title', max_length=200)
     text = models.TextField('Text', blank=True, null=True,  max_length=500)

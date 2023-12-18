@@ -29,6 +29,7 @@ class Ticket:
     title: str
     owner: str
     product: Product
+    uid: str = None
     description: str = None
     status: str = None
     priority: str = None
@@ -40,7 +41,7 @@ class TicketList:
 
 @dataclass
 class FollowUp:
-    ticket: Ticket
+    ticket_uid: str
     date: str
     title: str
     text: str = None
