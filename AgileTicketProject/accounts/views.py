@@ -1,19 +1,12 @@
+import logging
 from django.contrib.auth import logout
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import LoginView
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views import View
 from django.contrib import messages
-from django.http import HttpResponse, JsonResponse
-from django.utils.decorators import method_decorator
-from django.contrib.auth.decorators import login_required
-
-from .dataclasses import Organization, Agent
+from django.views import View
 from runner.bootstraper import get_bootstrapper
 from . import dataclasses, exceptions
-from .forms import create_dataclass_form, CreateUserForm, CreateOrganizationForm, UserProfileForm, \
-    AgentProfileForm, AgentForm, UserForm
-import logging
+from .forms import CreateOrganizationForm, AgentForm, UserForm
 
 from .models import User
 
@@ -24,19 +17,10 @@ def index(request):
     return render(request, 'base.html')
 
 
-# class UserLoginView(LoginView):
-#     template_name = 'accounts/user_login.html'
-#     redirect_authenticated_user = True
-#
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context['user_type'] = 'user'
-#         return context
-
-
 class LogoutView(LoginRequiredMixin, View):
     def get(self, request):
         logout(request)
+        messages.success(request, 'Thank you for visiting us.')
         return redirect('login')
 
 
@@ -44,37 +28,48 @@ class LoginView(View):
     template_name = 'accounts/agent_login.html'
     service = get_bootstrapper().get_account_service()
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request,):
         return render(request, self.template_name)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         username = request.POST.get('username')
         password = request.POST.get('password')
 
         try:
             user = self.service.login_with_username_and_password(username, password, request)
-            return render(request, 'base.html', {'user': user, 'messages:': [f'Wellcome: {user.get_full_name()}']})
+            request.session['is_agent'] = user.is_agent
+            request.session['organization'] = user.organization.name
+            messages.success(request, f'Wellcome: {user.get_full_name()}')
+            return render(request, 'base.html', {'user': user})
         except exceptions.LoginFailed as e:
-            return render(request, self.template_name, {'error': str(e)})
+            messages.error(request, f'{str(e)}')
+            return render(request, self.template_name)
         except Exception as e:
-            logger.info(f"error: {e}")
-            return render(request, self.template_name, {'error': str(e)})
+            messages.error(request, f'Error Login: {str(e)}')
+            return render(request, self.template_name)
 
 
-class ModifyUserView(View):
-    @login_required
+class ModifyUserView(LoginRequiredMixin, View):
+    service = get_bootstrapper().get_account_service()
+
     def get(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
         form = UserForm(instance=user)
-        return render(request, 'modify_user.html', {'form': form, 'user': user})
+        return render(request, 'accounts/modify_user.html', {'form': form, 'user': user})
 
-    @login_required
     def post(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
         form = UserForm(request.POST, instance=user)
         if form.is_valid():
-            form.save()
-            return redirect('accounts/user_profile')  # Adjust the redirect URL as needed
+            try:
+                user = dataclasses.User(**form.cleaned_data)
+                result = self.service.modify_user(user)
+                messages.success(request, f'User modified successfully: {result.username}')
+                return redirect('profile')
+
+            except Exception as e:
+                messages.error(request, f'Error Modify user: {e}')
+                return render(request, 'accounts/modify_user.html', {'form': form, 'user': user})
         return render(request, 'accounts/modify_user.html', {'form': form, 'user': user})
 
 
@@ -90,9 +85,13 @@ class ModifyAgentView(LoginRequiredMixin, View):
         agent = get_object_or_404(User, id=agent_id, is_agent=True)
         form = AgentForm(request.POST, instance=agent)
         if form.is_valid():
-            agent = form.save(commit=False)
-            self.service.modify_agent(agent)
-            return redirect('profile')
+            try:
+                agent = dataclasses.Agent(**form.cleaned_data)
+                self.service.modify_agent(agent)
+                messages.success(request, "Agent modified successfully.")
+                return redirect('profile')
+            except Exception as e:
+                messages.error(request, f'Error modify user: {str(e)}')
         return render(request, 'accounts/modify_agent.html', {'form': form, 'agent': agent})
 
 
@@ -101,31 +100,48 @@ class CreateAgentView(View):
 
     def get(self, request):
         form = AgentForm()
-        return render(request, 'accounts/create_agent.html', {'form': form})
+        organization_name = self.request.session.get('organization')
+        return render(request, 'accounts/create_agent.html', {'form': form, 'organization': organization_name})
 
     def post(self, request):
         form = AgentForm(request.POST)
         if form.is_valid():
-            agent = form.save(commit=False)
-            agent.is_agent = True
-            self.service.create_user(agent)
+            try:
+                agent = dataclasses.Agent(**form.cleaned_data)
+                organization_name = self.request.session.get('organization')
+                agent.organization = organization_name
+                agent.is_agent = True
+                self.service.create_user(agent)
+                messages.success(request, f'Agent: {agent.username}'
+                                          f' created Success Fully for organization {organization_name}')
+                return redirect('login')
 
-            return redirect('login')
+            except Exception as e:
+                messages.error(request, f"Error during user creation: {e}")
+                return redirect('login')
         return render(request, 'accounts/create_agent.html', {'form': form})
 
 
 class CreateUserView(View):
-    @login_required
+    service = get_bootstrapper().get_account_service()
+
     def get(self, request):
         form = UserForm()
         return render(request, 'accounts/create_user.html', {'form': form})
 
-    @login_required
     def post(self, request):
         form = UserForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('accounts/user_profile')  # Adjust the redirect URL as needed
+            user = form.save(commit=False)
+            user.is_agent = False
+            try:
+                result = self.service.create_user(user)
+                messages.success(request, f'User: {result.username} Created Success Fully.')
+                return redirect('profile')
+            except Exception as e:
+                messages.error(request, f"Error during user creation: {e}")
+                return redirect('register_user')
+
         return render(request, 'accounts/create_user.html', {'form': form})
 
 
@@ -142,21 +158,20 @@ class CreateOrganizationView(View):
         form = self.organization_form(request.POST)
         if form.is_valid():
             try:
-                # Create dataclass instance using **kwargs
                 organization_data = dataclasses.Organization(**form.cleaned_data)
                 result = self.service.create_organization(organization_data)
-                return render(request, 'base.html', {'messages': [f'Organization {result.name} created successfully.']})
+                request.session['organization'] = result.name
+                messages.success(request, 'Organization {result.name} created success fully.')
+                return redirect('register_agent')
             except Exception as e:
-                logger.error(f"Error during organization creation: {e}", exc_info=True)
-                return HttpResponse(f"Error during organization creation: {e}")
+                messages.error(request, f"Error during organization creation: {e}")
+                return redirect('register_organization')
         else:
             return render(request, self.template_name, {'form': form})
 
 
 class UserProfileView(LoginRequiredMixin, View):
     def get(self, request):
-        print(request)
-        print(request.user)
         user = request.user
         logger.info(f'profile: {user}')
         if user.is_agent:
@@ -164,7 +179,7 @@ class UserProfileView(LoginRequiredMixin, View):
         return render(request, 'accounts/user_profile.html', {'user': user})
 
 
-class AgentManagementView(View):
+class AgentManagementView(LoginRequiredMixin, View):
     template_name = 'accounts/agent_management.html'
     accounts_service = get_bootstrapper().get_account_service()
 
@@ -183,7 +198,7 @@ class AgentManagementView(View):
             return self.modify_user(request)
         else:
             messages.error(request, 'Invalid action.')
-            return redirect('user_management')  # Redirect to the user management page
+            return redirect('user_management')
 
     def create_user(self, request):
         create_form = AgentForm(request.POST)
@@ -197,7 +212,7 @@ class AgentManagementView(View):
         else:
             messages.error(request, 'Invalid form submission for user creation.')
 
-        return redirect('user_management')  # Redirect to the user management page
+        return redirect('user_management')
 
     def modify_user(self, request):
         modify_form = AgentForm(request.POST)
@@ -212,3 +227,8 @@ class AgentManagementView(View):
             messages.error(request, 'Invalid form submission for user modification.')
 
         return redirect('user_management')
+
+
+class AboutUsView(View):
+    def get(self, request):
+        return render(request, 'about_us.html')

@@ -19,14 +19,6 @@ class Agent:
     last_name: str = None
     email: str = None
     organization: str = None
-    role: 'Role' = None
-
-
-@dataclass
-class Role:
-    name: str
-    description: str = None
-    organization: str = None
 
 
 @dataclass

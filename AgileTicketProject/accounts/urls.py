@@ -13,5 +13,6 @@ urlpatterns = [
     path('agent_management/', views.AgentManagementView.as_view(), name='agent_management'),
     path('register_organization/', views.CreateOrganizationView.as_view(), name='register_organization'),
 
+
     # Other URL patterns for the app
 ]

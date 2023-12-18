@@ -11,25 +11,14 @@ except ImportError:
 
 class User(AbstractUser):
     uid = models.CharField('Uid', unique=True, default=uuid.uuid4, max_length=36)
-    is_agent = models.BooleanField('is Admin', default=False)
+    is_agent = models.BooleanField('is Agent', default=False)
     organization = models.ForeignKey('Organization', on_delete=models.CASCADE,
                                      related_name='agent_organization', null=True)
-    role = models.ForeignKey('Role', null=True, on_delete=models.CASCADE, related_name='agent_roles')
 
     def __str__(self):
         return f'{self.organization.name if self.is_agent else "Normal User"}' \
-               f' - {self.role.name if self.role else "No Role"}' \
                f'- {self.username}'
 
-
-class Role(models.Model):
-    uid = models.CharField('Uid', unique=True, default=uuid.uuid4, max_length=36)
-    name = models.CharField('Name', max_length=100)
-    description = models.CharField('Description', max_length=500, null=True)
-    organization = models.ForeignKey('Organization', null=True, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return '%s' % self.name
 
 
 class Organization(models.Model):

@@ -7,6 +7,5 @@
   <p>First Name: {{ agent.first_name }}</p>
   <p>Last Name: {{ agent.last_name }}</p>
   <p>Organization: {{ agent.organization }}</p>
-  <p>Role: {{ agent.role }}</p>
   <button onclick="window.location.href='{% url 'modify_agent' agent.id %}'">Modify Profile</button>
 {% endblock %}

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <h2>Register Agent</h2>
+  <h2>Register Agent For {{ organization }}</h2>
   <form method="post" action="{% url 'register_agent' %}">
     {% csrf_token %}
     {{ form.as_p }}

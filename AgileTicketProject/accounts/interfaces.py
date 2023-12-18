@@ -78,28 +78,3 @@ class AbstractAccountsService(abc.ABC):
         """
         raise NotImplementedError
 
-    @abc.abstractmethod
-    def create_role(self, role: dataclasses.Role):
-        """
-        Create a new role within an organization.
-
-        Args:
-            role (dataclasses.Role): Role information.
-
-        Raises:
-        """
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def change_agent_role(self, role: dataclasses.Role, agent: dataclasses.Agent):
-        """
-        Change the role of an agent.
-
-        Args:
-            role (dataclasses.Role): New role information.
-            agent (dataclasses.Agent): Agent whose role is to be changed.
-
-        Raises:
-        """
-        raise NotImplementedError
-

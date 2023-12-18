@@ -14,14 +14,13 @@
                 <li class="nav-item">
                     <a class="nav-link" href="#"><i class='fad fa-store-alt'></i> Services</a>
                 </li>
-                {% if request.user.is_authenticated %}
-                    {{ request.user }}
+                {% if request.user.is_authenticated and request.session.is_agent %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'agent_management' %}"><i class='fad fa-user-cog'></i> Agent Management</a>
                     </li>
                 {% endif %}
                 <li class="nav-item">
-                    <a class="nav-link" href="#"><i class='fad fa-envelope-square'></i> Contact us</a>
+                    <a class="nav-link" href="{% url 'about_us' %}"><i class='fad fa-envelope-square'></i> About us</a>
                 </li>
             </ul>
             <div class="dropdown">
@@ -42,7 +41,6 @@
                     {% else %}
                         <li><a class="dropdown-item" href="{% url 'login' %}"><i class='fad fa-id-card me-2'></i> Login</a></li>
                         <li><a class="dropdown-item" href="{% url 'register_user' %}"><i class='fad fa-id-card me-2'></i> Register</a></li>
-                        <li><a class="dropdown-item" href="{% url 'register_agent' %}"><i class='fad fa-id-card me-2'></i> Register Agent</a></li>
                         <li><a class="dropdown-item" href="{% url 'register_organization' %}"><i class='fad fa-id-card me-2'></i> Register Organization</a></li>
                     {% endif %}
                 </ul>

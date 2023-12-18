@@ -16,7 +16,7 @@ class Product:
     uid: str = None
     description: str = None
     image: str = None
-    pre_set_replay = PreSetReply = None
+    pre_set_replay = str = None
 
 
 @dataclass

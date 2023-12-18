@@ -3,7 +3,7 @@ import logging
 from django.contrib.auth import authenticate, login, get_user_model
 from django.shortcuts import get_object_or_404
 
-from .models import User, Role, Organization
+from .models import User, Organization
 from . import dataclasses
 from . import interfaces
 from . import exceptions
@@ -75,12 +75,6 @@ class AccountsService:
                 if data.organization:
                     org = get_object_or_404(Organization, name=data.organization)
                     user.organization = org
-                if data.role:
-                    role, _ = Role.objects.get_or_create(
-                        name=data.role.name,
-                        defaults={"description": data.role.description}
-                    )
-                    user.role = role
 
             user.save()
             logger.info(f"User {user.username} modified successfully.")
@@ -90,8 +84,8 @@ class AccountsService:
             return result
         except User.DoesNotExist:
             raise exceptions.UserNotFound()
-        except (Organization.DoesNotExist, Role.DoesNotExist):
-            raise exceptions.OrganizationOrRoleNotFound()
+        except Organization.DoesNotExist:
+            raise exceptions.OrganizationNotFound()
         except Exception as e:
             logger.error(f"Error during user modification: {e}", exc_info=True)
             raise e
@@ -99,13 +93,14 @@ class AccountsService:
     def create_user(self, user_data):
         logger.info(f'user_data: {user_data}')
         try:
-            organization = get_object_or_404(Organization, name=user_data.organization)
+            if user_data.is_agent:
+                organization = get_object_or_404(Organization, name=user_data.organization)
 
             if User.objects.filter(username=user_data.username).exists():
                 logger.info(f'user name is duplicated.')
                 raise exceptions.DuplicatedUsername()
 
-            user = User.objects.create(username=user_data.username, organization=organization,
+            user = User.objects.create(username=user_data.username,
                                        is_agent=user_data.is_agent)
             user.set_password(user_data.password)
 
@@ -117,12 +112,7 @@ class AccountsService:
                 user.last_name = user_data.last_name
 
             if user.is_agent:
-                if user_data.role:
-                    role, _ = Role.objects.get_or_create(
-                        name=user_data.role.name,
-                        defaults={"description": user_data.role.description}
-                    )
-                    user.role = role
+                user.organization = organization
 
             user.save()
             logger.info(f"User {user.username} created successfully.")
@@ -140,7 +130,7 @@ class AccountsService:
         try:
             if Organization.objects.filter(name=organization_data.name).exists():
                 logger.warning(f'Organization Name: {organization_data.name} is Duplicated!')
-                raise exceptions.OrganizationNotFound()
+                raise exceptions.DuplicateOrganizationName()
 
             organization = Organization(**vars(organization_data))
             # vars convert dataclass to dictionary
@@ -173,50 +163,6 @@ class AccountsService:
             logger.error(f"Error during organization modification: {e}", exc_info=True)
             raise e
 
-    def create_role(self, role_data: dataclasses.Role):
-        logger.info(f'role data: {role_data}')
-        try:
-            role = Role.objects.create(
-                name=role_data.name
-            )
-            if role_data.description:
-                role.description = role_data.description
-            if role_data.organization:
-                organization = Organization.objects.get(name=role_data.organization)
-                role.organization = organization
-            role.save()
-            logger.info(f"Role {role.name} created successfully in organization {organization.name}.")
-            result = self._convert_role_to_data_class(role)
-            logger.info(f"result: {result}")
-        except Organization.DoesNotExist:
-            logger.warning(f"Organization with Name {role_data.organization} does not exist.")
-            raise exceptions.OrganizationNotFound()
-        except Exception as e:
-            logger.error(f"Error during role creation: {e}", exc_info=True)
-            raise e
-
-    def change_agent_role(self, role_data: dataclasses.Role, agent_data: dataclasses.Agent):
-        try:
-            agent = User.objects.get(username=agent_data.username)
-            # if not role_data or not agent_data:
-            #     logger.info(f'Did not provided essential data.')
-            #     raise exceptions.NotProvidedData()
-            role, created = Role.objects.get_or_create(
-                name=role_data.name,
-                defaults={
-                    "description": role_data.description})
-            agent.role = role
-            agent.save()
-            logger.info(f"Role of Agent {agent.username} changed to {role.name} successfully.")
-            result = self._convert_agent_to_data_class(agent)
-            logger.info(f"result: {result}")
-        except User.DoesNotExist:
-            logger.warning(f"Agent with username {agent_data.username} does not exist.")
-            raise exceptions.UserNotFound()
-        except Exception as e:
-            logger.error(f"Error during changing agent role: {e} ", exc_info=True)
-            raise e
-
     @staticmethod
     def _convert_user_to_data_class(user: User) -> dataclasses.User:
         return dataclasses.User(
@@ -242,12 +188,5 @@ class AccountsService:
             last_name=agent.last_name,
             email=agent.email,
             organization=agent.organization.name if agent.organization else None,
-            role=self._convert_role_to_data_class(agent.role) if agent.role else None
         )
 
-    @staticmethod
-    def _convert_role_to_data_class(role: Role) -> dataclasses.Role:
-        return dataclasses.Role(
-            name=role.name,
-            description=role.description,
-        )

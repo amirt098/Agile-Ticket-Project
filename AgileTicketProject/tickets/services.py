@@ -27,6 +27,7 @@ class TicketService(interfaces.AbstractTicketServices):
                 name=product_data.name,
                 owner=agent_data.organization,
                 description=product_data.description,
+                presetreply=product_data.pre_set_replay,
 
             )
             logger.info(f'product: {created_product.name} created successfully in organization {created_product.owner} by user: {agent_data.username}')
