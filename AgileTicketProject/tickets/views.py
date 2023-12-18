@@ -1,6 +1,9 @@
+from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.views import View
-
+import logging
+from . import dataclasses
+from .forms import CreateProductForm
 from runner.bootstraper import get_bootstrapper
 from . import dataclasses
 from .forms import ProductForm
@@ -21,25 +24,30 @@ class ProductListView(View):
         return render(request, self.template_name, context)
 
 
-class ProductCreateView(View):
-    template_name = 'product_create.html'
+
+class CreateProductView(View):
+    template_name = 'tickets/create_product.html'
     service = get_bootstrapper().get_ticket_service()
+    product_form = CreateProductForm
 
     def get(self, request):
-        form = ProductForm()
+        form = self.product_form()
         return render(request, self.template_name, {'form': form})
 
     def post(self, request):
-        form = ProductForm(request.POST, request.FILES)
+        form = self.product_form(request.POST)
         if form.is_valid():
-            agent_data = request.user
-            product_data = form.cleaned_data
             try:
-                created_product = self.service.create_product(agent_data, product_data)
-                return redirect('product_list')
+                product_data = dataclasses.Product(**form.cleaned_data)
+                result = self.service.create_product(product_data= product_data,agent_data= request.user)
+                request.session['product'] = result.name
+                messages.success(request, 'Product {result.name} created success fully.')
+                return redirect('create_product')
             except Exception as e:
-                form.add_error(None, str(e))
-        return render(request, self.template_name, {'form': form})
+                messages.error(request, f"Error during product creation: {e}")
+                return redirect('create_product')
+        else:
+            return render(request, self.template_name, {'form': form})
 
 
 class DashboardView(View):
