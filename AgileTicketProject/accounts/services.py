@@ -1,12 +1,11 @@
 import logging
 
-from django.contrib.auth import authenticate, login, get_user_model
+from django.contrib.auth import login, get_user_model
 from django.shortcuts import get_object_or_404
 
-from .models import User, Organization
 from . import dataclasses
-from . import interfaces
 from . import exceptions
+from .models import User, Organization
 
 logger = logging.getLogger(__name__)
 
@@ -196,4 +195,3 @@ class AccountsService:
         result = [self._convert_organization_to_data_class(organization) for organization in organizations]
         logger.info(f'result: {result}')
         return result
-
