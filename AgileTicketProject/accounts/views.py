@@ -39,7 +39,8 @@ class LoginView(View):
         try:
             user = self.service.login_with_username_and_password(username, password, request)
             request.session['is_agent'] = user.is_agent
-            request.session['organization'] = user.organization.name
+            if user.is_agent:
+                request.session['organization'] = user.organization.name
             messages.success(request, f'Wellcome: {user.get_full_name()}')
             return render(request, 'base.html', {'user': user})
         except exceptions.LoginFailed as e:
@@ -47,7 +48,7 @@ class LoginView(View):
             return render(request, self.template_name)
         except Exception as e:
             messages.error(request, f'Error Login: {str(e)}')
-            return render(request, self.template_name)
+            raise e
 
 
 class ModifyUserView(LoginRequiredMixin, View):
