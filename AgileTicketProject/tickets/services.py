@@ -103,11 +103,9 @@ class TicketService(interfaces.AbstractTicketServices):
             raise e
 
     def modify_ticket(self, username: str, ticket_data: dataclasses.Ticket):
-        # user = User.objects.get(username=username)
-        #
-        #     raise Exception()
+        logger.info(f'username: {username}, ticket_data: {ticket_data}')
         try:
-            ticket = Ticket.objects.get(ticket_data.uid)
+            ticket = Ticket.objects.get(uid=ticket_data.uid)
             if ticket_data.status:
                 ticket.status = ticket_data.status
             if ticket_data.title:
@@ -183,10 +181,6 @@ class TicketService(interfaces.AbstractTicketServices):
 
         queryset = Product.objects.all()
 
-        # if filters:
-        #     if filters.owner:
-        #         queryset = queryset.filter(owner__icontains=filters.owner)
-        #
         if organization_name:
             logger.info('filtering')
             queryset = queryset.filter(owner=organization_name)

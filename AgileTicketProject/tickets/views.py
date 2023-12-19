@@ -1,5 +1,6 @@
 from django.contrib import messages
-from django.shortcuts import render, redirect
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 
 from runner.bootstraper import get_bootstrapper
@@ -59,7 +60,7 @@ class ProductView(View):
             return render(request, self.template_name, context)
 
 
-class CreateProductView(View):
+class CreateProductView(LoginRequiredMixin, View):
     template_name = 'tickets/create_product.html'
     service = get_bootstrapper().get_ticket_service()
     product_form = ProductForm
@@ -90,7 +91,7 @@ class DashboardView(View):
         return render(request, self.template_name)
 
 
-class TicketDetailView(View):
+class TicketDetailView(LoginRequiredMixin, View):
     template_name = 'tickets/ticket.html'
     service = get_bootstrapper().get_ticket_service()
     account_service = get_bootstrapper().get_account_service()
@@ -145,3 +146,30 @@ class TicketDetailView(View):
             )
             return redirect('ticket', ticket_uid=ticket.uid)
         return redirect('ticket', ticket_uid=ticket_uid)
+
+
+class ModifyTicketView(LoginRequiredMixin, View):
+    service = get_bootstrapper().get_ticket_service()
+    template_name = 'tickets/modify_ticket.html'
+    form = TicketForm
+
+    def get(self, request, ticket_uid):
+        ticket = get_object_or_404(Ticket, uid=ticket_uid)
+
+        form = self.form(instance=ticket)
+        return render(request, self.template_name, {'form': form, 'ticket_uid': ticket_uid})
+
+    def post(self, request, ticket_uid):
+        ticket = get_object_or_404(Ticket, uid=ticket_uid)
+        form = self.form(request.POST, instance=ticket)
+        if form.is_valid():
+            try:
+                ticket_data = dataclasses.Ticket(**form.cleaned_data)
+                ticket_data.uid = ticket_uid
+                self.service.modify_ticket(ticket_data=ticket_data, username=request.user.username)
+                messages.success(request, "Ticket modified successfully.")
+                return redirect('ticket', ticket_uid)
+            except Exception as e:
+                messages.error(request, f'Error modify Ticket: {str(e)}')
+        return render(request, self.template_name, {'form': form, 'ticket_uid': ticket_uid})
+

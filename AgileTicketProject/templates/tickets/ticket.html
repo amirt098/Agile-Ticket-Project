@@ -20,6 +20,11 @@
         <p>closed at: {{ ticket.closed_date }}</p>
     {% endif %}
 
+    {% if request.user.is_authenticated and request.user.username == ticket.owner %}
+        <a href="{% url 'modify_ticket' ticket.uid %}" class="btn btn-primary">Modify Ticket</a>
+
+    {% endif %}
+
     {% if follow_ups %}
         <h3>Follow Ups</h3>
         <ul>
