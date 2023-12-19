@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
+from django.views.generic import ListView
 
 from runner.bootstraper import get_bootstrapper
 from . import dataclasses
@@ -49,6 +50,7 @@ class ProductView(View):
             ticket_data.product = product
             ticket_data.owner = request.user.username
             ticket = self.service.create_ticket(request.user.username, ticket_data)
+            messages.success(request, 'Ticket create successfully.')
             return redirect('ticket', ticket.uid)
         else:
             tickets = self.service.get_tickets(product_uid=product_uid)
@@ -127,6 +129,7 @@ class TicketDetailView(LoginRequiredMixin, View):
                     follow_up_data=follow_up,
                     ticket_data=ticket,
                 )
+                messages.success(request, 'Add Follow Up successfully.')
                 return redirect('ticket', ticket_uid=ticket.uid)
         elif 'status' in request.POST:
             new_status = request.POST['status']
@@ -144,6 +147,8 @@ class TicketDetailView(LoginRequiredMixin, View):
                 ticket_data=ticket,
                 to_be_assigned_username=assigned_user
             )
+            messages.success(request, f'Ticket assigned to {assigned_user} successfully')
+
             return redirect('ticket', ticket_uid=ticket.uid)
         return redirect('ticket', ticket_uid=ticket_uid)
 
@@ -154,7 +159,7 @@ class ModifyTicketView(LoginRequiredMixin, View):
     form = TicketForm
 
     def get(self, request, ticket_uid):
-        ticket = get_object_or_404(Ticket, uid=ticket_uid)
+        ticket = get_object_or_404(Ticket, uid=ticket_uid, owner=request.user.username)
 
         form = self.form(instance=ticket)
         return render(request, self.template_name, {'form': form, 'ticket_uid': ticket_uid})
@@ -173,3 +178,12 @@ class ModifyTicketView(LoginRequiredMixin, View):
                 messages.error(request, f'Error modify Ticket: {str(e)}')
         return render(request, self.template_name, {'form': form, 'ticket_uid': ticket_uid})
 
+
+class AssignedTicketListView(ListView):
+    model = Ticket
+    template_name = 'tickets/assigned_ticket.html'
+    context_object_name = 'assigned_tickets'
+    service = get_bootstrapper().get_ticket_service()
+
+    def get_queryset(self):
+        return self.service.get_tickets(assigned_to=self.request.user.username)
