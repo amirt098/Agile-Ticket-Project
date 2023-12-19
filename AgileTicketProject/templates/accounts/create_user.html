@@ -1,11 +1,18 @@
-
 {% extends 'base.html' %}
 
 {% block content %}
-  <h2>Register User</h2>
-  <form method="post" action="{% url 'register_user' %}">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Register User</button>
-  </form>
+  <div class="container">
+    <div class="row card-panel s12">
+      <div class="container">
+        <form class="col-sm-4 mx-auto" method="post" action="{% url 'register_user' %}">
+          <div class="d-flex flex-column justify-content-center">
+            <h1 class="text-md-center">Register User</h1>
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button class="btn btn-outline-primary" type="submit" name="action">Register User</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 {% endblock %}

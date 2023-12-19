@@ -1,16 +1,18 @@
 {% extends 'base.html' %}
 
 {% block content %}
-  <div class="container mt-5">
-
-            <h2 class="card-title text-center mb-4">Register Organization</h2>
-            <form method="post" action="{% url 'register_organization' %}" class="needs-validation" novalidate>
-              {% csrf_token %}
-              {{ form.as_p }}
-              <div class="text-center mt-3">
-                <button type="submit" class="btn btn-primary">Register Organization</button>
-              </div>
-            </form>
-
-  </div>
+    <div class="container">
+        <div class="row card-panel s12">
+            <div class="container">
+                <form class="col-sm-4 mx-auto needs-validation" method="post" action="{% url 'register_organization' %}" novalidate>
+                    <div class="d-flex flex-column justify-content-center">
+                        <h2 class="text-md-center">Register Organization</h2>
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <button class="btn btn-outline-primary" type="submit" name="action">Register Organization</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 {% endblock %}
