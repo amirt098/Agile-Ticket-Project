@@ -1,13 +1,14 @@
 import logging
+
+from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
 from django.views import View
+
 from runner.bootstraper import get_bootstrapper
 from . import dataclasses, exceptions
 from .forms import CreateOrganizationForm, AgentForm, UserForm
-
 from .models import User
 
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ class LoginView(View):
     template_name = 'accounts/agent_login.html'
     service = get_bootstrapper().get_account_service()
 
-    def get(self, request,):
+    def get(self, request, ):
         return render(request, self.template_name)
 
     def post(self, request):
@@ -235,5 +236,10 @@ class AboutUsView(View):
         return render(request, 'about_us.html')
 
 
-class OrganizationListView(View):
-    pass
+class OrganizationListView(LoginRequiredMixin, View):
+    service = get_bootstrapper().get_account_service()
+
+    def get(self, request):
+        user = request.user
+        organizations = self.service.get_organizations(user)
+        return render(request, 'accounts/organization_list.html', {'organizations': organizations})

@@ -190,3 +190,10 @@ class AccountsService:
             organization=agent.organization.name if agent.organization else None,
         )
 
+    def get_organizations(self, user):
+        logger.info(f'user: {user}')
+        organizations = Organization.objects.all()
+        result = [self._convert_organization_to_data_class(organization) for organization in organizations]
+        logger.info(f'result: {result}')
+        return result
+

@@ -21,12 +21,13 @@
             <p class="card-text">Click to view products</p>
         </div>
     </div>
-    <div class="card" style="cursor: pointer;" onclick="navigateTo('tickets/product/create')">
-        <div class="card-body">
-            <h5 class="card-title">Create Product</h5>
-            <p class="card-text">Click to Create New Product</p>
+    {% if request.user.is_authenticated and request.session.is_agent %}
+        <div class="card" style="cursor: pointer;" onclick="navigateTo('tickets/product/create')">
+            <div class="card-body"><h5 class="card-title">Create Product</h5>
+                <p class="card-text">Click to Create New Product</p></div>
         </div>
-    </div>
+    {% endif %}
+
 
     <!-- Add more cards for other sections as needed -->
     </div>

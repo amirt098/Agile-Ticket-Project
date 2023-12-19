@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Organization List</h1>
+
+    <div class="row">
+        {% for organization in organizations %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="card-text text-dark">Organization name: {{ organization.name }}</p>
+                        <p class="card-text text-dark">Description: {{ organization.description }}</p>
+                        <p class="card-text text-dark">Address: {{ organization.address }}</p>
+                        <p class="card-text text-dark">Phone: {{ organization.phone }}</p>
+                        <a href="{% url 'org_product_list' organization.name %}" class="btn btn-primary">View
+                            Products</a>
+
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock content %}

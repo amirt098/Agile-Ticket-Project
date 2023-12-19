@@ -3,13 +3,6 @@ from typing import List, Optional, Any
 
 
 @dataclass
-class PreSetReply:
-    name: str
-    body: str
-    user: str
-
-
-@dataclass
 class Product:
     name: str
     owner: str = None
@@ -27,13 +20,16 @@ class ProductList:
 @dataclass
 class Ticket:
     title: str
-    product: Product
-    owner: str
+    product: Product = None
+    owner: str = None
     uid: str = None
     description: str = None
     status: str = None
     priority: str = None
     assigned_to: str = None
+    closed_date: str = None
+    created_at: str = None
+    updated_at: str = None
 
 
 @dataclass
@@ -43,11 +39,13 @@ class TicketList:
 
 @dataclass
 class FollowUp:
-    ticket_uid: str
-    date: str
     title: str
+    ticket_uid: str = None
+    date: str = None
     text: str = None
     user: str = None
+    created_at: str = None
+    modified_at: str = None
 
 
 @dataclass

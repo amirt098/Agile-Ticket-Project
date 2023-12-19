@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% if product.image %}
+        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+    {% endif %}
+    <h2>Name: {{ product.name }}</h2>
+    <p>Organization: {{ product.owner }}</p>
+    <p>Description: {{ product.description }}</p>
+    {% if request.user.is_authenticated and request.session.is_agent and request.session.organization == product.owner %}
+        <p>Uid: {{ product.uid }}</p>
+        <p>Pre Set Reply: {{ product.pre_set_reply }}</p>
+        ## Todo: add modification button
+    {% endif %}
+
+    <h3>Tickets</h3>
+    {% if tickets %}
+        <ul>
+            {% for ticket in tickets %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h2 class="card-title text-dark">{{ ticket.title }}</h2>
+                        <p class="card-text text-dark">{{ ticket.description }} </p>
+                        <a href="{% url 'ticket' ticket.uid %}" class="card-text text-blue">{{ ticket.title }}</a>
+                    </div>
+                </div>
+
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No tickets found for this product.</p>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+        <div class="card-action">
+            <h3>Create Ticket</h3>
+            <form method="post" style="margin-top: 1.3em;">
+                {% csrf_token %}
+                {{ ticket_form.as_p }}
+                <button type="submit" class="btn btn-primary  btn-lg">Submit</button>
+            </form>
+
+        </div>
+    {% else %}
+        <div class="card-action">
+            <h3>please log in to create ticket <a class="ml-2" href={% url 'login' %}> login </a></h3>
+        </div>
+    {% endif %}
+
+
+{% endblock content %}

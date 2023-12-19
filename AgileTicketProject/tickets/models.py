@@ -10,7 +10,7 @@ except ImportError:
 class Product(models.Model):
     uid = models.CharField('Uid', unique=True, default=uuid.uuid4, max_length=36)
     name = models.CharField('Name', max_length=100)
-    owner = models.CharField("Organization Uid",  max_length=36)
+    owner = models.CharField("Organization Name",  max_length=36)
     pre_set_reply = models.CharField("Pre Set Reply", max_length=200, null=True)
     description = models.CharField("Description", max_length=500, null=True, blank=True)
     image = models.ImageField('Image', upload_to='products/', null=True, blank=True)
@@ -27,15 +27,15 @@ class Product(models.Model):
 class Ticket(models.Model):
     uid = models.CharField('Uid', unique=True, default=uuid.uuid4, max_length=36)
     title = models.CharField('Title', max_length=255)
-    owner = models.CharField(blank=True, null=False, verbose_name='Owner user uid',  max_length=36)
+    owner = models.CharField(blank=True, null=False, verbose_name='Owner username',  max_length=36)
     description = models.TextField('Description', blank=True, null=True,  max_length=500)
     product_uid = models.CharField('Product_Uid', null=True, max_length=36)
 
-    OPEN_STATUS = 1
-    REOPENED_STATUS = 2
-    RESOLVED_STATUS = 3
-    CLOSED_STATUS = 4
-    DUPLICATE_STATUS = 5
+    OPEN_STATUS = 'Open'
+    REOPENED_STATUS = 'Reopened'
+    RESOLVED_STATUS = 'Resolved'
+    CLOSED_STATUS = 'Closed'
+    DUPLICATE_STATUS = ''
     STATUS_CHOICES = (
         (OPEN_STATUS, 'Open'),
         (REOPENED_STATUS, 'Reopened'),
@@ -72,7 +72,7 @@ class FollowUp(models.Model):
     date = models.DateTimeField('Date', default=timezone.now)
     title = models.CharField('Title', max_length=200)
     text = models.TextField('Text', blank=True, null=True,  max_length=500)
-    user = models.CharField(blank=True, null=True, verbose_name='User - Uid',  max_length=36)
+    user = models.CharField(blank=True, null=True, verbose_name='Username',  max_length=36)
     created_at = models.DateTimeField(auto_now_add=True)
     modified_at = models.DateTimeField(auto_now=True)
 

@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Ticket Detail</h2>
+    <p>Title: {{ ticket.title }}</p>
+    <p>Product name: {{ ticket.product.name }}</p>
+    <a href="{% url 'product' ticket.product.uid %}" class="btn btn-primary">View Product</a>
+    <p>Product Organization: {{ ticket.product.owner }}</p>
+    <a href="{% url 'org_product_list' ticket.product.owner %}" class="btn btn-primary">View
+        Organization</a>
+    <p>Description: {{ ticket.description }}</p>
+    <p>Status: {{ ticket.status }}</p>
+    <p>Priority: {{ ticket.priority }}</p>
+    {% if ticket.assigned_to %}
+        <p>Assigned to: {{ ticket.assigned_to }}</p>
+    {% endif %}
+    <p>created at: {{ ticket.created_at }}</p>
+    <p>updated at: {{ ticket.updated_at }}</p>
+    {% if ticket.closed_date %}
+        <p>closed at: {{ ticket.closed_date }}</p>
+    {% endif %}
+
+    {% if follow_ups %}
+        <h3>Follow Ups</h3>
+        <ul>
+            {% for follow_up in follow_ups %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h4 class="card-title text-dark">User: {{ follow_up.user }}</h4>
+                        <p class="card-text text-dark">Title: {{ follow_up.title }} </p>
+                        <p class="card-text text-dark">Text: {{ follow_up.text }} </p>
+                        <p class="card-text text-dark">Date: {{ follow_up.modified_at }} </p>
+                    </div>
+                </div>
+
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No Follow Up found for this Ticket.</p>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+        <div class="card-action">
+            <h3>Add FollowUp</h3>
+            <form method="post" style="margin-top: 1.3em;">
+                {% csrf_token %}
+                {{ follow_up_form.as_p }}
+                <button type="submit" class="btn btn-primary  btn-lg">Submit</button>
+            </form>
+
+        </div>
+        {% if request.user.is_authenticated and request.session.is_agent and request.session.organization == ticket.product.owner %}
+
+            <div class="card-action">
+                <h3>Assign Ticket to User</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    <select name="assigned_user">
+                        {% for user in users %}
+                            <option value="{{ user.username }}">{{ user.username }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-primary  btn-lg">Assign</button>
+                </form>
+            </div>
+
+            <div class="card-action">
+                <h3>Change Ticket Status</h3>
+                <form method="post">
+                    {% csrf_token %}
+                    <select name="status">
+                        {% for status in STATUS_CHOICES %}
+                            <option value="{{ status.0 }}">{{ status.1 }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-primary  btn-lg">Change Status</button>
+                </form>
+            </div>
+        {% endif %}
+    {% endif %}
+
+
+
+{% endblock content %}

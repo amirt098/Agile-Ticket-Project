@@ -1,5 +1,6 @@
 from django import forms
-from .models import Product
+
+from .models import Product, Ticket, FollowUp
 
 
 class ProductForm(forms.ModelForm):
@@ -7,3 +8,14 @@ class ProductForm(forms.ModelForm):
         model = Product
         fields = ['name', 'pre_set_reply', 'description', 'image']
 
+
+class TicketForm(forms.ModelForm):
+    class Meta:
+        model = Ticket
+        fields = ['title', 'description', 'priority']
+
+
+class FollowUpForm(forms.ModelForm):
+    class Meta:
+        model = FollowUp
+        fields = ['title', 'text']
