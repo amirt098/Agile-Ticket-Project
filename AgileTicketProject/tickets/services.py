@@ -18,18 +18,29 @@ class NotFound(Exception):
     pass
 
 
+class UserNeedPermission(BadRequest):
+    def __init__(self):
+        super().__init__("You need Permission to do that.")
+
+
 class TicketService(interfaces.AbstractTicketServices):
     def create_product(self, agent_data: account_dataclasses.Agent,
                        product_data: dataclasses.Product) -> dataclasses.Product:
+        if not agent_data.is_agent:
+            logger.info("You need Permission to do that.")
+            raise UserNeedPermission()
         try:
             created_product = Product.objects.create(
                 name=product_data.name,
                 owner=agent_data.organization,
                 description=product_data.description,
+                pre_set_reply=product_data.pre_set_reply,
+                image=product_data.image,
             )
             logger.info(
                 f'product: {created_product.name} created successfully in organization {created_product.owner} by user: {agent_data.username}')
             result = self._convert_product_to_dataclass(created_product)
+            logger.info(f"result: {result}")
             return result
         except Exception as e:
             logger.error(f"Error during user creation: {e}", exc_info=True)
@@ -41,6 +52,8 @@ class TicketService(interfaces.AbstractTicketServices):
             name=product.name,
             owner=product.owner,
             description=product.description,
+            pre_set_reply=product.pre_set_reply,
+            image=product.image,
             uid=product.uid,
         )
 

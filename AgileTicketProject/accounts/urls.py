@@ -12,7 +12,7 @@ urlpatterns = [
     path('profile/', views.UserProfileView.as_view(), name='profile'),
     path('agent_management/', views.AgentManagementView.as_view(), name='agent_management'),
     path('register_organization/', views.CreateOrganizationView.as_view(), name='register_organization'),
-    path('organization/', views.OrganizationListView.as_view(), name='get_organizations'),
+    path('organizations/', views.OrganizationListView.as_view(), name='get_organizations'),
 
     # Other URL patterns for the app
 ]

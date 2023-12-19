@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Any
 
 
 @dataclass
@@ -12,11 +12,11 @@ class PreSetReply:
 @dataclass
 class Product:
     name: str
-    owner: str
+    owner: str = None
     uid: str = None
     description: str = None
-    image: str = None
-    pre_set_replay = str = None
+    image: Any = None
+    pre_set_reply: str = None
 
 
 @dataclass
@@ -27,8 +27,8 @@ class ProductList:
 @dataclass
 class Ticket:
     title: str
-    owner: str
     product: Product
+    owner: str
     uid: str = None
     description: str = None
     status: str = None
