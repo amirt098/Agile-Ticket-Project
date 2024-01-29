@@ -86,8 +86,8 @@ class AccountsService:
         except Organization.DoesNotExist:
             raise exceptions.OrganizationNotFound()
         except Exception as e:
-            logger.error(f"Error during user modification: {e}", exc_info=True)
-            raise e
+            logger.error(f"Error during user modification: {exceptions.UserNotFound()}", exc_info=True)
+            raise exceptions.UserNotFound()
 
     def create_user(self, user_data):
         logger.info(f'user_data: {user_data}')
@@ -122,8 +122,8 @@ class AccountsService:
         except Organization.DoesNotExist:
             raise exceptions.OrganizationNotFound()
         except Exception as e:
-            logger.error(f"Error during user creation: {e}", exc_info=True)
-            raise e
+            logger.error(f"Error during user creation: {exceptions.OrganizationNotFound}", exc_info=True)
+            raise exceptions.OrganizationNotFound
 
     def create_organization(self, organization_data: dataclasses.Organization) -> dataclasses.Organization:
         try:

@@ -36,7 +36,7 @@ class TestCreateOrganization(TestCase):
 
         self.service.create_organization(organization_data)
 
-        with self.assertRaises(exceptions.OrganizationNotFound):
+        with self.assertRaises(exceptions.DuplicateOrganizationName):
             self.service.create_organization(organization_data)
 
     def test_create_organization_partial_data(self):
