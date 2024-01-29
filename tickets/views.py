@@ -6,7 +6,7 @@ from django.views.generic import ListView
 
 from runner.bootstraper import get_bootstrapper
 from . import dataclasses
-from .forms import ProductForm, TicketForm, FollowUpForm
+from .forms import ProductForm, TicketForm, FollowUpForm, ModifyTicketForm
 from .models import Ticket
 
 
@@ -46,20 +46,23 @@ class ProductView(View):
         product = self.service.get_product(product_uid)
         form = self.ticket_form(request.POST)
         if form.is_valid():
-            ticket_data = dataclasses.Ticket(**form.cleaned_data)
-            ticket_data.product = product
-            ticket_data.owner = request.user.username
-            ticket = self.service.create_ticket(request.user.username, ticket_data)
-            messages.success(request, 'Ticket create successfully.')
-            return redirect('ticket', ticket.uid)
-        else:
-            tickets = self.service.get_tickets(product_uid=product_uid)
-            context = {
-                'product': product,
-                'tickets': tickets,
-                'ticket_form': form,
-            }
-            return render(request, self.template_name, context)
+            try:
+                ticket_data = dataclasses.Ticket(**form.cleaned_data)
+                ticket_data.product = product
+                ticket_data.owner = request.user.username
+                ticket = self.service.create_ticket(request.user.username, ticket_data)
+                messages.success(request, 'Ticket create successfully.')
+                return redirect('ticket', ticket.uid)
+            except Exception as e:
+                messages.error(request, f"Error during add new ticket: {e}")
+
+        tickets = self.service.get_tickets(product_uid=product_uid)
+        context = {
+            'product': product,
+            'tickets': tickets,
+            'ticket_form': form,
+        }
+        return render(request, self.template_name, context)
 
 
 class CreateProductView(LoginRequiredMixin, View):
@@ -156,7 +159,7 @@ class TicketDetailView(LoginRequiredMixin, View):
 class ModifyTicketView(LoginRequiredMixin, View):
     service = get_bootstrapper().get_ticket_service()
     template_name = 'tickets/modify_ticket.html'
-    form = TicketForm
+    form = ModifyTicketForm
 
     def get(self, request, ticket_uid):
         ticket = get_object_or_404(Ticket, uid=ticket_uid, owner=request.user.username)
@@ -187,3 +190,13 @@ class AssignedTicketListView(ListView):
 
     def get_queryset(self):
         return self.service.get_tickets(assigned_to=self.request.user.username)
+
+
+class UnAssignedTicketListView(ListView):
+    model = Ticket
+    template_name = 'tickets/un_assigned_ticket.html'
+    context_object_name = 'un_assigned_tickets'
+    service = get_bootstrapper().get_ticket_service()
+
+    def get_queryset(self):
+        return self.service.get_tickets(assigned_to=None)

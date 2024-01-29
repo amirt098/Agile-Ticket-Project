@@ -11,5 +11,6 @@ urlpatterns = [
     path('ticket/<str:ticket_uid>/', views.TicketDetailView.as_view(), name='ticket'),
     path('modify_ticket/<str:ticket_uid>', views.ModifyTicketView.as_view(), name='modify_ticket'),
     path('assigned/', views.AssignedTicketListView.as_view(), name='assigned_ticket'),
+    path('un_assigned/', views.UnAssignedTicketListView.as_view(), name='un_assigned_ticket'),
 
 ]

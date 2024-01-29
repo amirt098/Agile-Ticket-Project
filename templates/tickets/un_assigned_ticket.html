@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Un Assigned Tickets</h2>
+    <style>
+        .card-title, .card-text {
+            color: black;
+        }
+    </style>
+    {% if un_assigned_tickets %}
+        <ul>
+            {% for ticket in un_assigned_tickets %}
+                <div class="card" style="cursor: pointer;"
+                     onclick="window.location.href = '{% url 'ticket' ticket.uid %}';">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ ticket.title }}</h5>
+                        <p class="card-text">{{ product.description }}</p>
+                        <p class="card-text">Status: {{ ticket.status }}</p>
+                        <p class="card-text">Assigned to: {{ ticket.assigned_to }}</p>
+
+                    </div>
+                </div>
+
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No un assigned tickets found.</p>
+    {% endif %}
+{% endblock content %}

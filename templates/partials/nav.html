@@ -11,15 +11,18 @@
                     <a class="nav-link active" aria-current="page" href="{% url 'index' %}"><i
                             class="fad fa-home"></i> Home</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#"><i class='fad fa-store-alt'></i> Services</a>
-                </li>
+{#                <li class="nav-item">#}
+{#                    <a class="nav-link" href="#"><i class='fad fa-store-alt'></i> Services</a>#}
+{#                </li>#}
                 {% if request.user.is_authenticated and request.session.is_agent %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'agent_management' %}"><i class='fad fa-user-cog'></i> Agent Management</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'assigned_ticket' %}"><i class='fa fa-file'></i> Assigned Tickets</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'un_assigned_ticket' %}"><i class='fa fa-file'></i>Un Assigned Tickets</a>
                     </li>
                 {% endif %}
                 {% if request.user.is_authenticated %}

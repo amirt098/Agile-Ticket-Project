@@ -1,5 +1,7 @@
 import logging
 
+from django.utils import timezone
+
 from accounts import dataclasses as account_dataclasses
 from accounts.models import Organization as account_organization
 from . import dataclasses
@@ -75,6 +77,8 @@ class TicketService(interfaces.AbstractTicketServices):
 
     def create_ticket(self, username: str, ticket_data: dataclasses.Ticket):
         logger.info(f'username: {username}, ticket_data: {ticket_data}')
+        if ticket_data.dead_line_date:
+            self._validate_future_datetime(ticket_data.dead_line_date)
         try:
             ticket = Ticket.objects.create(title=ticket_data.title, owner=username,
                                            product_uid=ticket_data.product.uid, )
@@ -82,6 +86,8 @@ class TicketService(interfaces.AbstractTicketServices):
                 ticket.description = ticket_data.description
             if ticket_data.priority:
                 ticket.priority = ticket_data.priority
+            if ticket_data.dead_line_date:
+                ticket.dead_line_date = ticket_data.dead_line_date
             ticket.status = 'Open'
             ticket.save()
             logger.info(f"User {username} created a ticket with title {ticket.title} successfully.")
@@ -101,6 +107,11 @@ class TicketService(interfaces.AbstractTicketServices):
         except Exception as e:
             logger.error(f"Error during ticket creation: {e}", exc_info=True)
             raise e
+
+    @staticmethod
+    def _validate_future_datetime(value):
+        if value <= timezone.now():
+            raise Exception('The date and time must be in the future.')
 
     def modify_ticket(self, username: str, ticket_data: dataclasses.Ticket):
         logger.info(f'username: {username}, ticket_data: {ticket_data}')
@@ -122,10 +133,6 @@ class TicketService(interfaces.AbstractTicketServices):
         except Exception as e:
             logger.error(f"Error during ticket modified: {e}", exc_info=True)
             raise e
-
-    def change_ticket_priority(self, user, ticket, priority):
-        # in ticket modify handled
-        pass
 
     def assign_ticket(self, username: str, ticket_data: dataclasses.Ticket, to_be_assigned_username: str):
         logger.info(
@@ -205,9 +212,11 @@ class TicketService(interfaces.AbstractTicketServices):
             priority=ticket.priority,
             assigned_to=ticket.assigned_to,
             product=self._convert_product_to_dataclass(Product.objects.get(uid=ticket.product_uid)),
-            closed_date=ticket.closed_date,
-            created_at=ticket.created_at,
-            updated_at=ticket.updated_at,
+            closed_date=str(ticket.closed_date),
+            created_at=str(ticket.created_at),
+            updated_at=str(ticket.updated_at),
+            dead_line_date=ticket.dead_line_date,
+
         )
 
     @staticmethod
@@ -217,9 +226,9 @@ class TicketService(interfaces.AbstractTicketServices):
             user=followup.user,
             ticket_uid=followup.ticket_uid,
             text=followup.text,
-            date=followup.date,
-            created_at=followup.created_at,
-            modified_at=followup.modified_at,
+            date=str(followup.date),
+            created_at=str(followup.created_at),
+            modified_at=str(followup.modified_at),
         )
 
     def get_product(self, product_uid):

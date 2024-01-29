@@ -30,7 +30,6 @@ class Ticket(models.Model):
     owner = models.CharField(blank=True, null=False, verbose_name='Owner username',  max_length=36)
     description = models.TextField('Description', blank=True, null=True,  max_length=500)
     product_uid = models.CharField('Product_Uid', null=True, max_length=36)
-
     OPEN_STATUS = 'Open'
     REOPENED_STATUS = 'Reopened'
     RESOLVED_STATUS = 'Resolved'
@@ -62,6 +61,7 @@ class Ticket(models.Model):
                                    null=True,  max_length=36)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    dead_line_date = models.DateTimeField(blank=True, null=True)
 
 
 class FollowUp(models.Model):

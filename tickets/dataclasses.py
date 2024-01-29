@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import List, Optional, Any
 
 
@@ -30,6 +31,7 @@ class Ticket:
     closed_date: str = None
     created_at: str = None
     updated_at: str = None
+    dead_line_date: datetime = None
 
 
 @dataclass

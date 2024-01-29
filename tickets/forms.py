@@ -12,6 +12,15 @@ class ProductForm(forms.ModelForm):
 class TicketForm(forms.ModelForm):
     class Meta:
         model = Ticket
+        fields = ['title', 'description', 'priority', 'dead_line_date']
+        widgets = {
+            'dead_line_date': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+        }
+
+
+class ModifyTicketForm(forms.ModelForm):
+    class Meta:
+        model = Ticket
         fields = ['title', 'description', 'priority']
 
 
