@@ -84,23 +84,9 @@ WSGI_APPLICATION = 'AgileTicketProject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'data/db.sqlite3'),
     }
 }
-#  for my sql !
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'mydatabase',
-#         'USER': 'mydatabaseuser',
-#         'PASSWORD': 'mydatabasepassword',
-#         'HOST': 'db',
-#         'PORT': '3306',
-#     }
-# }
-
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
