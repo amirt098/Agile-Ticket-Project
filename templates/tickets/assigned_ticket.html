@@ -6,21 +6,34 @@
         .card-title, .card-text {
             color: black;
         }
+        .near-deadline {
+            color: yellow;
+        }
+        .passed-deadline {
+            color: red;
+        }
+        .needs-answer {
+            color: red;
+            font-size: 1.5em;
+        }
     </style>
     {% if assigned_tickets %}
         <ul>
             {% for ticket in assigned_tickets %}
-                <div class="card" style="cursor: pointer;"
-                     onclick="window.location.href = '{% url 'ticket' ticket.uid %}';">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ ticket.title }}</h5>
-                        <p class="card-text">{{ product.description }}</p>
-                        <p class="card-text">Status: {{ ticket.status }}</p>
-                        <p class="card-text">Assigned to: {{ ticket.assigned_to }}</p>
-
+                {% with time_until_deadline=ticket.time_until_deadline %}
+                    <div class="card" style="cursor: pointer;"
+                         onclick="window.location.href = '{% url 'ticket' ticket.uid %}';">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ ticket.title }}{% if not ticket.have_answer %} <span class="needs-answer">*</span>{% endif %}</h5>
+                            <p class="card-text">{{ product.description }}</p>
+                            <p class="card-text">Status: {{ ticket.status }}</p>
+                            <p class="card-text">Assigned to: {{ ticket.assigned_to }}</p>
+                            <p class="card-text" style="{% if time_until_deadline.days < 0 %}color: red;{% elif time_until_deadline.days <= 3 %}color: yellow;{% endif %}">
+                                time until deadline: {{ time_until_deadline }}
+                            </p>
+                        </div>
                     </div>
-                </div>
-
+                {% endwith %}
             {% endfor %}
         </ul>
     {% else %}

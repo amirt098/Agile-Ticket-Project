@@ -10,7 +10,7 @@
     {% if request.user.is_authenticated and request.session.is_agent and request.session.organization == product.owner %}
         <p>Uid: {{ product.uid }}</p>
         <p>Pre Set Reply: {{ product.pre_set_reply }}</p>
-        ## Todo: add modification button
+{#        <a href="{% url 'modify_product' product.uid %}" class="btn btn-primary">Modify Product</a>#}
     {% endif %}
 
     <h3>Tickets</h3>

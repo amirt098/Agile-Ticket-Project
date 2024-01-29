@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Optional, Any
 
 
@@ -32,7 +32,8 @@ class Ticket:
     created_at: str = None
     updated_at: str = None
     dead_line_date: datetime = None
-
+    time_until_deadline: timedelta = None
+    have_answer: bool = False
 
 @dataclass
 class TicketList:

@@ -89,6 +89,30 @@ class CreateProductView(LoginRequiredMixin, View):
             return render(request, self.template_name, {'form': form})
 
 
+class ModifyProductView(LoginRequiredMixin, View):
+    template_name = 'tickets/modify_product.html'
+    service = get_bootstrapper().get_ticket_service()
+    product_form = ProductForm
+
+    def get(self, request):
+        form = self.product_form()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request):
+        form = self.product_form(request.POST)
+        if form.is_valid():
+            try:
+                product_data = dataclasses.Product(**form.cleaned_data)
+                result = self.service.modify_product(product_data=product_data, username=request.user)
+                messages.success(request, f'Product {result.name} modified success fully.')
+                return redirect('product', product_uid=result.uid)
+            except Exception as e:
+                messages.error(request, f"Error during product modification: {e}")
+                raise e
+        else:
+            return render(request, self.template_name, {'form': form})
+
+
 class DashboardView(View):
     template_name = 'dashboard.html'
 

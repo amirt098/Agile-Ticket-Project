@@ -1,7 +1,7 @@
 import logging
 
 from django.utils import timezone
-
+from datetime import datetime
 from accounts import dataclasses as account_dataclasses
 from accounts.models import Organization as account_organization
 from . import dataclasses
@@ -203,6 +203,9 @@ class TicketService(interfaces.AbstractTicketServices):
         return account_organization.objects.filter(**filters)
 
     def _convert_ticket_to_dataclass(self, ticket: Ticket) -> dataclasses.Ticket:
+        ticket_deadline_date = ticket.dead_line_date.replace(tzinfo=timezone.get_current_timezone())
+        time_until_deadline = ticket_deadline_date - datetime.now(timezone.utc)
+
         return dataclasses.Ticket(
             uid=ticket.uid,
             title=ticket.title,
@@ -216,9 +219,19 @@ class TicketService(interfaces.AbstractTicketServices):
             created_at=str(ticket.created_at),
             updated_at=str(ticket.updated_at),
             dead_line_date=ticket.dead_line_date,
-
+            time_until_deadline=time_until_deadline,
+            have_answer=self._check_answer(ticket)
         )
 
+    @staticmethod
+    def _check_answer(ticket: Ticket) -> bool:
+        product = Product.objects.get(uid=ticket.product_uid)
+        followups = len(FollowUp.objects.filter(ticket_uid=ticket.uid))
+        if product.pre_set_reply and followups > 1:
+            return True
+        if not product.pre_set_reply and followups > 0:
+            return True
+        return False
     @staticmethod
     def _convert_followup_to_dataclass(followup: FollowUp) -> dataclasses.FollowUp:
         return dataclasses.FollowUp(
