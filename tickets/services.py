@@ -203,8 +203,11 @@ class TicketService(interfaces.AbstractTicketServices):
         return account_organization.objects.filter(**filters)
 
     def _convert_ticket_to_dataclass(self, ticket: Ticket) -> dataclasses.Ticket:
-        ticket_deadline_date = ticket.dead_line_date.replace(tzinfo=timezone.get_current_timezone())
-        time_until_deadline = ticket_deadline_date - datetime.now(timezone.utc)
+        if ticket.dead_line_date:
+            ticket_deadline_date = ticket.dead_line_date.replace(tzinfo=timezone.get_current_timezone())
+            time_until_deadline = ticket_deadline_date - datetime.now(timezone.utc)
+        else:
+            time_until_deadline = None
 
         return dataclasses.Ticket(
             uid=ticket.uid,
@@ -232,6 +235,7 @@ class TicketService(interfaces.AbstractTicketServices):
         if not product.pre_set_reply and followups > 0:
             return True
         return False
+
     @staticmethod
     def _convert_followup_to_dataclass(followup: FollowUp) -> dataclasses.FollowUp:
         return dataclasses.FollowUp(
